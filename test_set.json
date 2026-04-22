@@ -1,0 +1,256 @@
+[
+  {
+    "source": "1203向量索引.md",
+    "question": "IVF_FLAT 索引方法的核心原理是什么？",
+    "answer_points": [
+      "通过聚类算法将高维空间中的向量划分为多个子空间（簇）",
+      "为每个簇创建倒排索引，从而在查询时仅关注与查询向量相似的簇"
+    ]
+  },
+  {
+    "source": "1203向量索引.md",
+    "question": "IVF_FLAT 索引方法中 nprobe 参数的作用是什么？",
+    "answer_points": [
+      "控制搜索时考虑的簇的数量",
+      "平衡查询精度和查询速度"
+    ]
+  },
+  {
+    "source": "0611MOCO.md",
+    "question": "什么是MOCO的预训练目的？",
+    "answer_points": [
+      "只需要简单的微调就可以轻松的迁移到下游任务中",
+      "主流的工作都是在ImageNet上做有监督的训练，而Moco采用无监督的方式进行训练"
+    ]
+  },
+  {
+    "source": "0611MOCO.md",
+    "question": "MOCO中的memory bank和dictionary有何区别？",
+    "answer_points": [
+      "memory bank包含所有的图片，每轮中都要从中采样一个mini-batch的数据",
+      "dictionary动态字典，包含大量图片，每轮选取的mini-batch都要跟字典中的图片进行对比学习。动态体现在每一轮中的key和dictionary都是变化的"
+    ]
+  },
+  {
+    "source": "0522PEFT（Parameter-Efficient Fine-Tuning ）.md",
+    "question": "什么是LoRA技术？其核心思想是什么？",
+    "answer_points": [
+      "LoRA是一种用于微调大型预训练语言模型的方法。",
+      "它的核心思想是在模型的关键层中添加小型、低秩的矩阵来调整模型的行为，而不是直接改变整个模型的结构。"
+    ]
+  },
+  {
+    "source": "0522PEFT（Parameter-Efficient Fine-Tuning ）.md",
+    "question": "LoRA技术的工作原理是什么？其具体步骤有哪些？",
+    "answer_points": [
+      "选择要调整的权重矩阵：在大型模型中，我们首先确定要微调的权重矩阵。",
+      "引入两个低秩矩阵A和B，并通过计算它们的乘积生成一个新的矩阵AB。"
+    ]
+  },
+  {
+    "source": "为什么现在大模型在推理阶段都是左padding？.md",
+    "question": "为什么大模型在推理阶段选择左padding而非右padding？",
+    "answer_points": [
+      "生成时默认用序列最后一个token的logits采样，右padding会导致采样逻辑拿到无意义的logits；",
+      "KV-cache能复用，在线推理显存和吞吐更高效。"
+    ]
+  },
+  {
+    "source": "为什么现在大模型在推理阶段都是左padding？.md",
+    "question": "在训练和推理中，什么是padding？",
+    "answer_points": [
+      "为了批量并行处理可变长度的序列，需要对短序列进行填充；",
+      "做法是往句子里塞“占位符token（<pad>）”。"
+    ]
+  },
+  {
+    "source": "25-0222NSA.md",
+    "question": "NSA机制如何在长文本任务和推理任务上实现高效计算？",
+    "answer_points": [
+      "通过将键和值组织成时间块并通过三条注意力路径处理它们来减少每个查询的计算：压缩的粗粒度字符、选择性保留的细粒度字符和用于局部上下文信息的滑动窗口。",
+      "NSA在基准测试、长文本任务、推理任务上都取得了比全注意力更优的结果，而计算速度却远快于全注意力计算。"
+    ]
+  },
+  {
+    "source": "25-0222NSA.md",
+    "question": "预填充技术如何提高模型的响应速度和节省计算资源？",
+    "answer_points": [
+      "在模型开始处理用户输入之前，Pre-filling可以将一些固定的上下文或不随用户输入改变的内容预先输入模型，计算出hidden states和KV cache。",
+      "通过动态缓存（例如kv cache），模型可以在每次计算中保存一部分隐含层的计算结果，并在接下来的计算中复用这些缓存的数据。"
+    ]
+  },
+  {
+    "source": "DistServe：预填充和解码解耦.md",
+    "question": "什么是TTFT？",
+    "answer_points": [
+      "生成第一个 token 的等待时间",
+      "Prefill阶段是计算密集型任务"
+    ]
+  },
+  {
+    "source": "DistServe：预填充和解码解耦.md",
+    "question": "如何解释高Throughput而低Goodput的现象？",
+    "answer_points": [
+      "为了提升整体吞吐量，现有系统通常采用continuous batching策略",
+      "部分请求在 decode 阶段等待过久，违反 SLO"
+    ]
+  },
+  {
+    "source": "大模型在强化学习中探索和学习的熵机制.md",
+    "question": "熵崩溃现象是什么？",
+    "answer_points": [
+      "指在不加熵正则干预的情况下，RL训练过程中policy entropy会在早期迅速下降，最终趋近于零，导致模型几乎只会选择极少数确定性的动作，探索能力完全丧失。",
+      "这直接带来了下游reward（性能）的上限瓶颈：模型性能在训练初期快速提升，但很快到达平台期，后续难以突破。"
+    ]
+  },
+  {
+    "source": "大模型在强化学习中探索和学习的熵机制.md",
+    "question": "解决熵崩溃的方法有哪些？",
+    "answer_points": [
+      "提出了两种控制策略熵的方法：Clip-Cov方法通过识别出具有最高协方差的一小部分token，并在策略更新时，对其梯度的影响进行裁剪或直接分离其梯度。",
+      "KL-Cov方法则是在高协方差token上施加一个额外的KL散度惩罚项，旨在约束当前策略与先前策略在这些关键token上的分布差异。"
+    ]
+  },
+  {
+    "source": "25-0107Agent Planning3 反思.md",
+    "question": "什么是Reflexion Agent?",
+    "answer_points": [
+      "Reflexion Agent在生成每一个trajectory后，进行启发式评估，生成反思文本并保留在记忆缓冲区中。",
+      "评估器模型对执行者产生的输出进行打分，自我反思模型协助执行者自我提升。"
+    ]
+  },
+  {
+    "source": "25-0107Agent Planning3 反思.md",
+    "question": "如何定义效率低下的规划和幻觉?",
+    "answer_points": [
+      "效率低下的规划指的是长时间未成功完成的trajectory。",
+      "幻觉定义为一系列连续相同的行动，这些行动导致在环境中观察到相同的结果。"
+    ]
+  },
+  {
+    "source": "0530Rag for Scratch——langchain.md",
+    "question": "什么是rag pipeline的第四阶段？",
+    "answer_points": [
+      "indexing是rag pipeline的第四阶段，就是将文档压缩为数值表示，以建立索引，便于后续的检索和生成。"
+    ]
+  },
+  {
+    "source": "0530Rag for Scratch——langchain.md",
+    "question": "什么是multi-representation indexing？其基本思想是什么？",
+    "answer_points": [
+      "Multi-Vector Retriever使用一个简单而强大的RAG理念：将用于答案生成的文档与用于检索的参考文档解耦。",
+      "基本思想是使用更小/简洁的表示（摘要或块）进行检索，但将它们链接到完整文档/上下文以进行生成。"
+    ]
+  },
+  {
+    "source": "25-0228Deep research.md",
+    "question": "为什么说DeepSearcher可能是继Simple RAG与Graph RAG之后的新的主流RAG思路？",
+    "answer_points": [
+      "解决了过去的RAG无法对问题进行拆解的问题，现在，系统能够理解问题的深层次含义，并进行多步骤推理与分析",
+      "引入向量搜索技术后，系统能够从海量数据中提取出最相关的、高质量的信息，并将其有效融合"
+    ]
+  },
+  {
+    "source": "25-0401GRPO.md",
+    "question": "在GRPO算法中，为什么使用Advantage而不是reward？",
+    "answer_points": [
+      "考虑当前回答相比其他回答的优劣",
+      "最大化生成更高Advantage回答的概率"
+    ]
+  },
+  {
+    "source": "0515self Attention与kv cache.md",
+    "question": "为什么在推理阶段需要使用KV Cache机制？",
+    "answer_points": [
+      "新生成的token会加入序列，一起作为下一次解码的输入",
+      "由于单向注意力的存在，新加入的token并不会影响前面序列的计算"
+    ]
+  },
+  {
+    "source": "0515self Attention与kv cache.md",
+    "question": "KV Cache机制如何通过L2缓存来提高模型推理速度？",
+    "answer_points": [
+      "把已经计算过的每层的kv值保存起来",
+      "通过把kv值存储在速度远快于显存的L2缓存中，可以大大减少kv值的保存和读取"
+    ]
+  },
+  {
+    "source": "0709Flash attention-原理.md",
+    "question": "传统自注意力模块面临的主要问题有哪些？",
+    "answer_points": [
+      "显存占用多",
+      "HBM读写次数多"
+    ]
+  },
+  {
+    "source": "0709Flash attention-原理.md",
+    "question": "Flash Attention是如何优化自注意力模块的计算速度和内存需求的？",
+    "answer_points": [
+      "将从输入到输出的整个过程进行融合，省去矩阵S、P的存储开销",
+      "采用分片操作（tiling），每次进行部分计算，确保这些计算结果能在SRAM内进行交互"
+    ]
+  },
+  {
+    "source": "Medusa.md",
+    "question": "MEDUSA头如何初始化？",
+    "answer_points": [
+      "第k个解码头用于预测第t+k+1个位置的词，预测记为p<sub>t,k</sub>",
+      "W<sup>(1)</sup><sub>k</sub> 初始化为原语言模型head权重，W<sup>(2)</sup><sub>k</sub>初始化为0"
+    ]
+  },
+  {
+    "source": "Medusa.md",
+    "question": "MEDUSA方法的三个主要步骤是什么？",
+    "answer_points": [
+      "生成候选，通过Medusa头实现",
+      "处理候选，通过树注意力实现",
+      "接受候选，通过拒绝采样或者典型接受实现"
+    ]
+  },
+  {
+    "source": "dl_nlp/0709Flash attention-原理.md",
+    "question": "自注意力模块的计算和空间复杂度为多少？假设N=2048，d=128。",
+    "answer_points": [
+      "Q, K, V ∈RN×d",
+      "O(N^2)"
+    ]
+  },
+  {
+    "source": "dl_nlp/0709Flash attention-原理.md",
+    "question": "传统attention算法在处理长序列时面临哪些问题？",
+    "answer_points": [
+      "显存占用多，由于计算过程中存储完整注意力矩阵P和S",
+      "HBM读写次数多，需要传输的数据量大"
+    ]
+  },
+  {
+    "source": "0816DPO.md",
+    "question": "DPO算法是如何优化策略模型的？",
+    "answer_points": [
+      "通过对policy model进行优化，最大限度提升生成prefer答案的可能性",
+      "直接将偏好损失定义为policy中的一个函数，使用简单的二元交叉熵目标来优化策略"
+    ]
+  },
+  {
+    "source": "0816DPO.md",
+    "question": "DPO算法是如何通过奖励模型来优化策略的？",
+    "answer_points": [
+      "利用从奖励函数到最优策略的映射，将奖励函数的损失函数转换为策略的损失函数",
+      "通过对policy model进行优化，最大限度提升生成prefer答案的可能性"
+    ]
+  },
+  {
+    "source": "0730分布式训练2——DDP.md",
+    "question": "如何进行分布式模型训练？",
+    "answer_points": [
+      "数据并行（Data Parallel），即将数据切分到多个GPU上，并在每个GPU上执行相同的模型副本；模型并行（Model Parallelism）、流水并行（Pipeline Parallel）和张量并行（Tensor Parallel）等其他形式的并行计算方法。"
+    ]
+  },
+  {
+    "source": "0730分布式训练2——DDP.md",
+    "question": "多设备加速比是如何定义的？",
+    "answer_points": [
+      "多设备加速比指的是使用多个计算设备进行并行处理时，相对于单设备计算速度的加速比例。理想情况下，如果使用n个设备，则理论上的加速比是n倍，但实际上由于通信开销、负载不均衡等因素，实际的加速比往往低于理论值。"
+    ]
+  }
+]
