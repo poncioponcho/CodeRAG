@@ -2,1278 +2,2288 @@
   "configs": [
     {
       "config": "baseline_faiss",
-      "total_queries": 22,
-      "avg_points_coverage": 0.295,
-      "avg_accuracy": 2.77,
-      "avg_completeness": 2.95,
-      "avg_relevance": 3.86,
-      "avg_retrieve_ms": 53.7,
-      "avg_generate_ms": 6288.5,
+      "total_queries": 13,
+      "avg_points_coverage": 0.231,
+      "avg_accuracy": 2.85,
+      "avg_completeness": 2.08,
+      "avg_relevance": 3.92,
+      "avg_retrieve_ms": 38.8,
+      "avg_generate_ms": 5847.6,
       "details": [
         {
-          "question": "Qwen3-VL在架构方面做了哪些改进？",
-          "source": "Qwen3-VL技术报告解读.md",
-          "points_found": 3,
-          "total_points": 3,
-          "retrieve_ms": 140.9,
+          "question": "为什么在缺少few-shot样本的情况下，CoD方法的表现会大幅下降？",
+          "source": "Chain of Draft.md",
+          "points_found": 1,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "训练数据中缺乏CoD风格的推理样本。",
+              "hit": false
+            },
+            {
+              "point": "小模型表达能力较弱，难以兼顾简洁和信息完整。",
+              "hit": true
+            }
+          ],
+          "retrieve_ms": 205.8,
           "accuracy": 4,
           "completeness": 3,
           "relevance": 5,
-          "comment": "回答主要基于检索资料，但未明确指出PagedAttention的优点，仅提供了相关技术背景和优点的定义"
+          "comment": "回答基本准确，但没有直接给出CoD方法表现下降的具体原因。"
         },
         {
-          "question": "Qwen3-VL的训练流程分为哪几个阶段？",
-          "source": "Qwen3-VL技术报告解读.md",
+          "question": "如何计算指令微调的损失函数？",
+          "source": "0601指令微调.md",
           "points_found": 0,
           "total_points": 2,
-          "retrieve_ms": 26.6,
+          "point_details": [
+            {
+              "point": "loss = r(A) - r(B) + r(A) - r(C) + r(A) - r(D) + r(B) - r(C)",
+              "hit": false
+            },
+            {
+              "point": "loss = -loss",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 29.7,
+          "accuracy": 1,
+          "completeness": 1,
+          "relevance": 2,
+          "comment": "检索结果与问题无关，未找到关于指令微调损失函数的相关信息。"
+        },
+        {
+          "question": "LLMLingua的Budget Controller如何工作？",
+          "source": "1025Long context4 提示压缩2.md",
+          "points_found": 1,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "预算控制器用于demonstration的压缩，从而粗颗粒度地控制budget",
+              "hit": false
+            },
+            {
+              "point": "按照perplexity进行排序，只保留perplexity高的demonstration",
+              "hit": true
+            }
+          ],
+          "retrieve_ms": 27.0,
+          "accuracy": 3,
+          "completeness": 3,
+          "relevance": 4,
+          "comment": "回答提及了预算控制器用于demonstration的压缩，但没有详细说明如何工作。"
+        },
+        {
+          "question": "什么是数据并行（Data Parallel），以及它在模型训练中的作用？",
+          "source": "0730分布式训练2——DDP.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "将同一个模型复制到多个GPU上，并执行不同的数据分片",
+              "hit": false
+            },
+            {
+              "point": "要求每张卡内都可以完整执行训练过程",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 23.3,
+          "accuracy": 4,
+          "completeness": 2,
+          "relevance": 5,
+          "comment": "回答基本准确，但缺乏对数据并行具体定义和作用的详细解释。"
+        },
+        {
+          "question": "多设备加速比是如何定义的？影响因素有哪些？",
+          "source": "0730分布式训练2——DDP.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "指的是当使用多个计算设备并行处理时，相对于单设备计算速度的加速比例",
+              "hit": false
+            },
+            {
+              "point": "通信开销、负载不均衡等因素",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 20.7,
+          "accuracy": 3,
+          "completeness": 3,
+          "relevance": 4,
+          "comment": "检索结果与问题部分相关，但没有直接回答多设备加速比的具体定义及其影响因素。"
+        },
+        {
+          "question": "投机解码（Speculative Decoding）如何提升推理效率？",
+          "source": "投机解码Speculative Decoding.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "减少解码次数，从而减少通信次数",
+              "hit": false
+            },
+            {
+              "point": "保证生成质量的同时大幅提升了推理效率",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 73.9,
+          "accuracy": 4,
+          "completeness": 3,
+          "relevance": 5,
+          "comment": "回答基本准确，但缺少关键信息，如具体含义和应用场景。"
+        },
+        {
+          "question": "什么是Routing在RAG中的作用？",
+          "source": "0528Rag for Scratch——langchain.md",
+          "points_found": 2,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "Routing是RAG pipeline的第二个阶段，目的是依据query的内容路由到正确的数据源。",
+              "hit": true
+            },
+            {
+              "point": "实际上就是一个分类任务。",
+              "hit": true
+            }
+          ],
+          "retrieve_ms": 25.2,
           "accuracy": 2,
           "completeness": 1,
-          "relevance": 3,
-          "comment": "检索结果与问题不直接相关，未能提供Qwen3-VL训练流程的具体阶段信息。"
+          "relevance": 4,
+          "comment": "检索结果偏离主题严重，未能覆盖标准要点。"
         },
         {
-          "question": "PagedAttention如何管理KV缓存？",
-          "source": "Pageattention.md",
-          "points_found": 1,
+          "question": "如何通过逻辑路由选择正确的索引？",
+          "source": "0528Rag for Scratch——langchain.md",
+          "points_found": 0,
           "total_points": 2,
-          "retrieve_ms": 27.6,
+          "point_details": [
+            {
+              "point": "使用function calling得到结构化的输出",
+              "hit": false
+            },
+            {
+              "point": "从多个索引中选择最相关的进行查询，例如：\n- 一个索引包含了所有与LangChain相关的Python文档。\n- 另一个",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 18.1,
           "accuracy": 5,
-          "completeness": 4,
-          "relevance": 5,
-          "comment": "回答完全基于检索资料，并且涵盖了标准要点中的相关内容，但未明确指出PagedAttention如何管理KV缓存的细节。"
+          "completeness": 3,
+          "relevance": 4,
+          "comment": "回答准确且相关，但缺少具体示例和详细解释。"
         },
         {
-          "question": "PagedAttention的优点有哪些？",
-          "source": "Pageattention.md",
-          "points_found": 1,
+          "question": "lora 算法中的 h= Wor + AW 如何表示？",
+          "source": "0613 lora.md",
+          "points_found": 2,
           "total_points": 2,
-          "retrieve_ms": 26.3,
-          "accuracy": 5,
-          "completeness": 5,
+          "point_details": [
+            {
+              "point": "h = Wor + AW",
+              "hit": true
+            },
+            {
+              "point": "- e W SRAFY | ERS,",
+              "hit": true
+            }
+          ],
+          "retrieve_ms": 17.4,
+          "accuracy": 4,
+          "completeness": 2,
           "relevance": 5,
-          "comment": "答案准确地指出了Lora模型中h表达式的定义，并且完全覆盖了标准要点中的内容，与问题高度相关。"
+          "comment": "基本准确，但未能完整覆盖标准要点。"
         },
         {
-          "question": "lora模型中的h表达式是什么？",
+          "question": "lora 中的 d*d 2*r*d 公式代表什么含义？",
           "source": "0613 lora.md",
           "points_found": 0,
           "total_points": 1,
-          "retrieve_ms": 28.2,
+          "point_details": [
+            {
+              "point": "d*d 2*r*d",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 6.8,
           "accuracy": 3,
-          "completeness": 2,
-          "relevance": 4,
-          "comment": "虽然检索到了一些相关的技术文档，但未能直接回答Lora模型中h表达式的具体形式，仅提供了部分上下文信息。"
-        },
-        {
-          "question": "在生成自定义任务的数据集中，如何确保新指令的多样性？",
-          "source": "0605指令微调数据集.md",
-          "points_found": 0,
-          "total_points": 2,
-          "retrieve_ms": 140.1,
-          "accuracy": 2,
-          "completeness": 3,
-          "relevance": 4,
-          "comment": "回答偏离了问题主题，没有直接解释如何确保指令多样性。"
-        },
-        {
-          "question": "ROUGE-L衡量的是什么？其值范围是什么？",
-          "source": "0605指令微调数据集.md",
-          "points_found": 0,
-          "total_points": 2,
-          "retrieve_ms": 7.9,
-          "accuracy": 1,
-          "completeness": 2,
-          "relevance": 3,
-          "comment": "检索结果与问题无关，未提供ROUGE-L的具体定义和值范围。"
-        },
-        {
-          "question": "Hyper-Connections（HC）是如何工作的？",
-          "source": "重构残差连接：DeepSeek mHC 架构中的几何与数学原理.md",
-          "points_found": 2,
-          "total_points": 2,
-          "retrieve_ms": 36.9,
-          "accuracy": 4,
-          "completeness": 5,
-          "relevance": 5,
-          "comment": "准确解释了Hyper-Connections的工作原理，并涵盖了相关要点。"
-        },
-        {
-          "question": "Routing在RAG pipeline中的作用是什么？",
-          "source": "0528Rag for Scratch——langchain.md",
-          "points_found": 1,
-          "total_points": 2,
-          "retrieve_ms": 11.4,
-          "accuracy": 3,
-          "completeness": 4,
-          "relevance": 5,
-          "comment": "回答基本覆盖了问题的核心，但缺乏具体细节和实现方法。"
-        },
-        {
-          "question": "如何实现语义路由？",
-          "source": "0528Rag for Scratch——langchain.md",
-          "points_found": 0,
-          "total_points": 2,
-          "retrieve_ms": 25.0,
-          "accuracy": 2,
-          "completeness": 3,
-          "relevance": 4,
-          "comment": "检索结果与问题相关性差，没有直接解释语义路由的实现方式。"
-        },
-        {
-          "question": "LLMLingua 的预算控制器是如何工作的？其主要作用是什么？",
-          "source": "1025Long context4 提示压缩2.md",
-          "points_found": 0,
-          "total_points": 2,
-          "retrieve_ms": 93.3,
-          "accuracy": 1,
-          "completeness": 2,
-          "relevance": 3,
-          "comment": "检索结果与问题不相关，未提及LLMLingua的预算控制器及其工作原理和主要作用。"
-        },
-        {
-          "question": "LLMLingua 的迭代令牌级提示压缩（ITPC）算法是如何工作的？其主要特点是什么？",
-          "source": "1025Long context4 提示压缩2.md",
-          "points_found": 0,
-          "total_points": 2,
-          "retrieve_ms": 28.6,
-          "accuracy": 1,
-          "completeness": 2,
-          "relevance": 3,
-          "comment": "检索结果与问题不相关，未提及LLMLingua的迭代令牌级提示压缩（ITPC）算法的工作方式及特点。"
-        },
-        {
-          "question": "PCW（Parallel context windows）是如何处理长文本问题的？其主要特点是什么？",
-          "source": "1016Long context3-上下文窗口分割 (1)(1).md",
-          "points_found": 1,
-          "total_points": 2,
-          "retrieve_ms": 30.3,
-          "accuracy": 4,
-          "completeness": 5,
-          "relevance": 5,
-          "comment": "回答准确地描述了PCW处理长文本的方式及其主要特点，且内容完整覆盖要点。"
-        },
-        {
-          "question": "什么是短期记忆、长期记忆以及混合记忆？它们在智能体中的作用分别是什么？",
-          "source": "25-0121Memory-based agent.md",
-          "points_found": 0,
-          "total_points": 2,
-          "retrieve_ms": 23.5,
-          "accuracy": 1,
-          "completeness": 2,
-          "relevance": 3,
-          "comment": "检索结果与问题不相关，未提及短期记忆、长期记忆以及混合记忆的概念及其在智能体中的作用。"
-        },
-        {
-          "question": "量化指的是什么过程？",
-          "source": "0622Quantization.md",
-          "points_found": 0,
-          "total_points": 2,
-          "retrieve_ms": 31.8,
-          "accuracy": 4,
-          "completeness": 5,
-          "relevance": 5,
-          "comment": "回答准确地解释了量化的过程，并完整覆盖了标准要点。"
-        },
-        {
-          "question": "什么是MoE模型中的稀疏性？",
-          "source": "Engram.md",
-          "points_found": 1,
-          "total_points": 2,
-          "retrieve_ms": 305.9,
-          "accuracy": 4,
-          "completeness": 3,
-          "relevance": 5,
-          "comment": "回答基本准确地解释了MoE模型中的稀疏性概念，但没有完全覆盖标准要点。"
-        },
-        {
-          "question": "Engram如何实现O(1)复杂度的哈希检索？",
-          "source": "Engram.md",
-          "points_found": 1,
-          "total_points": 2,
-          "retrieve_ms": 7.9,
-          "accuracy": 2,
           "completeness": 1,
-          "relevance": 3,
-          "comment": "检索结果与问题无关，未能提供关于Engram实现O(1)复杂度哈希检索的相关信息。"
+          "relevance": 4,
+          "comment": "检索结果偏离主题严重，未能有效回答问题。"
         },
         {
-          "question": "Monte Carlo 方法的核心思想是什么？",
-          "source": "0806强化学习3蒙特卡洛方法.md",
-          "points_found": 2,
-          "total_points": 2,
-          "retrieve_ms": 11.8,
-          "accuracy": 5,
-          "completeness": 5,
-          "relevance": 5,
-          "comment": "回答准确、完整且相关地解释了Monte Carlo方法的核心思想，并覆盖了所有标准要点。"
-        },
-        {
-          "question": "在Monte Carlo 方法中，如何计算状态s下的累计回报v(s)？",
-          "source": "0806强化学习3蒙特卡洛方法.md",
-          "points_found": 1,
-          "total_points": 2,
-          "retrieve_ms": 26.6,
-          "accuracy": 4,
-          "completeness": 3,
-          "relevance": 5,
-          "comment": "回答基本准确，但没有直接给出如何计算状态s下的累计回报v(s)的具体步骤。"
-        },
-        {
-          "question": "SAPO解决了MoE模型中的哪些问题？",
-          "source": "SAPO.md",
-          "points_found": 0,
-          "total_points": 2,
-          "retrieve_ms": 28.9,
-          "accuracy": 2,
-          "completeness": 1,
-          "relevance": 3,
-          "comment": "检索结果与问题无关，未能提供关于SAPO解决MoE模型中相关问题的相关信息。"
-        },
-        {
-          "question": "记忆的来源有哪些？",
-          "source": "25-0127Memory-based agent2.md",
+          "question": "如何使用HuggingFace库进行大语言模型的调用？",
+          "source": "1111LangChain3 模型调用和输出解析.md",
           "points_found": 0,
           "total_points": 3,
-          "retrieve_ms": 96.9,
-          "accuracy": 1,
-          "completeness": 2,
-          "relevance": 1,
-          "comment": "检索结果与问题不相关，没有提供记忆来源的相关信息。"
+          "point_details": [
+            {
+              "point": "首先导入分词器和预训练的模型",
+              "hit": false
+            },
+            {
+              "point": "将用户问题转成pytorch张量",
+              "hit": false
+            },
+            {
+              "point": "使用generate方法生成回复",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 36.7,
+          "accuracy": 2,
+          "completeness": 1,
+          "relevance": 3,
+          "comment": "回答偏离了问题核心，提供的信息与如何使用HuggingFace库进行大语言模型的调用无关。没有覆盖标准要点中的导入分词器、转成pytorch张量和生成回复的方法。"
         },
         {
-          "question": "参数化形式的记忆存储方法主要分为哪两类？",
-          "source": "25-0127Memory-based agent2.md",
+          "question": "在进行大语言模型调用时，如何确保响应文本的正确性？",
+          "source": "1111LangChain3 模型调用和输出解析.md",
           "points_found": 0,
           "total_points": 2,
-          "retrieve_ms": 24.2,
+          "point_details": [
+            {
+              "point": "使用分词器的decode方法将生成的令牌解码成文本",
+              "hit": false
+            },
+            {
+              "point": "跳过任何特殊的令牌",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 8.6,
           "accuracy": 1,
           "completeness": 2,
-          "relevance": 1,
-          "comment": "检索结果与问题不相关，没有提供参数化形式的记忆存储方法的相关分类。"
+          "relevance": 3,
+          "comment": "回答偏离了问题核心，提供的信息与确保响应文本正确性的方法无关。没有覆盖标准要点中的解码令牌成文本和跳过特殊令牌的方法。"
+        },
+        {
+          "question": "什么是rag pipeline的第四阶段？",
+          "source": "0530Rag for Scratch——langchain.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "indexing是rag pipeline的第四阶段",
+              "hit": false
+            },
+            {
+              "point": "就是将文档压缩为数值表示，以建立索引，便于后续的检索和生成",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 10.7,
+          "accuracy": 1,
+          "completeness": 2,
+          "relevance": 3,
+          "comment": "回答偏离了问题核心，提供的信息与RAG pipeline的第四阶段无关。没有明确指出第四阶段是索引建立过程。"
         }
       ]
     },
     {
       "config": "hybrid_rerank",
-      "total_queries": 22,
-      "avg_points_coverage": 0.5,
-      "avg_accuracy": 2.95,
-      "avg_completeness": 2.45,
-      "avg_relevance": 3.64,
-      "avg_retrieve_ms": 597.8,
-      "avg_generate_ms": 6870.3,
+      "total_queries": 13,
+      "avg_points_coverage": 0.423,
+      "avg_accuracy": 2.77,
+      "avg_completeness": 2.23,
+      "avg_relevance": 3.54,
+      "avg_retrieve_ms": 921.6,
+      "avg_generate_ms": 6704.7,
       "details": [
         {
-          "question": "Qwen3-VL在架构方面做了哪些改进？",
-          "source": "Qwen3-VL技术报告解读.md",
-          "points_found": 3,
-          "total_points": 3,
-          "retrieve_ms": 553.4,
+          "question": "为什么在缺少few-shot样本的情况下，CoD方法的表现会大幅下降？",
+          "source": "Chain of Draft.md",
+          "points_found": 1,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "训练数据中缺乏CoD风格的推理样本。",
+              "hit": false
+            },
+            {
+              "point": "小模型表达能力较弱，难以兼顾简洁和信息完整。",
+              "hit": true
+            }
+          ],
+          "retrieve_ms": 983.5,
           "accuracy": 4,
           "completeness": 3,
           "relevance": 5,
-          "comment": "回答提到了交错-MRoPE，但没有提及DeepStack和基于文本的时间对齐机制，标准要点不完整。"
+          "comment": "回答较为准确地解释了CoD方法在缺少few-shot样本时的表现下降的原因，但未完全覆盖标准要点中的所有信息。"
         },
         {
-          "question": "Qwen3-VL的训练流程分为哪几个阶段？",
-          "source": "Qwen3-VL技术报告解读.md",
-          "points_found": 2,
-          "total_points": 2,
-          "retrieve_ms": 705.6,
-          "accuracy": 4,
-          "completeness": 2,
-          "relevance": 5,
-          "comment": "回答主要集中在KV缓存管理上，但没有提到预训练和后训练的三个阶段，标准要点缺失。"
-        },
-        {
-          "question": "PagedAttention如何管理KV缓存？",
-          "source": "Pageattention.md",
-          "points_found": 1,
-          "total_points": 2,
-          "retrieve_ms": 637.4,
-          "accuracy": 3,
-          "completeness": 2,
-          "relevance": 4,
-          "comment": "回答提到了PagedAttention的优点，但没有提及如何管理KV缓存的具体细节，标准要点不完整。"
-        },
-        {
-          "question": "PagedAttention的优点有哪些？",
-          "source": "Pageattention.md",
-          "points_found": 1,
-          "total_points": 2,
-          "retrieve_ms": 741.1,
-          "accuracy": 5,
-          "completeness": 3,
-          "relevance": 5,
-          "comment": "回答准确地列出了PagedAttention的两个优点，但没有详细解释h表达式，标准要点不完整。"
-        },
-        {
-          "question": "lora模型中的h表达式是什么？",
-          "source": "0613 lora.md",
-          "points_found": 0,
-          "total_points": 1,
-          "retrieve_ms": 532.6,
-          "accuracy": 4,
-          "completeness": 2,
-          "relevance": 5,
-          "comment": "回答提到了lora模型中的h表达式，但没有提供具体的数学表达式，标准要点不完整。"
-        },
-        {
-          "question": "在生成自定义任务的数据集中，如何确保新指令的多样性？",
-          "source": "0605指令微调数据集.md",
+          "question": "如何计算指令微调的损失函数？",
+          "source": "0601指令微调.md",
           "points_found": 0,
           "total_points": 2,
-          "retrieve_ms": 710.8,
-          "accuracy": 2,
+          "point_details": [
+            {
+              "point": "loss = r(A) - r(B) + r(A) - r(C) + r(A) - r(D) + r(B) - r(C)",
+              "hit": false
+            },
+            {
+              "point": "loss = -loss",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 991.0,
+          "accuracy": 1,
           "completeness": 1,
           "relevance": 1,
-          "comment": "回答与问题无关，未提供关于如何确保指令多样性的信息。"
+          "comment": "检索结果与问题无关，未能提供关于如何计算指令微调的损失函数的相关信息。"
         },
         {
-          "question": "ROUGE-L衡量的是什么？其值范围是什么？",
-          "source": "0605指令微调数据集.md",
-          "points_found": 2,
-          "total_points": 2,
-          "retrieve_ms": 502.4,
-          "accuracy": 4,
-          "completeness": 3,
-          "relevance": 5,
-          "comment": "准确地解释了ROUGE-L的定义和计算方式，并且涵盖了标准要点。"
-        },
-        {
-          "question": "Hyper-Connections（HC）是如何工作的？",
-          "source": "重构残差连接：DeepSeek mHC 架构中的几何与数学原理.md",
-          "points_found": 2,
-          "total_points": 2,
-          "retrieve_ms": 564.6,
-          "accuracy": 1,
-          "completeness": 2,
-          "relevance": 1,
-          "comment": "回答与问题无关，未提供关于Hyper-Connections的信息。"
-        },
-        {
-          "question": "Routing在RAG pipeline中的作用是什么？",
-          "source": "0528Rag for Scratch——langchain.md",
-          "points_found": 1,
-          "total_points": 2,
-          "retrieve_ms": 531.0,
-          "accuracy": 3,
-          "completeness": 4,
-          "relevance": 5,
-          "comment": "解释了Routing在RAG pipeline中的作用，并且涵盖了标准要点。"
-        },
-        {
-          "question": "如何实现语义路由？",
-          "source": "0528Rag for Scratch——langchain.md",
-          "points_found": 0,
-          "total_points": 2,
-          "retrieve_ms": 532.7,
-          "accuracy": 1,
-          "completeness": 2,
-          "relevance": 1,
-          "comment": "回答与问题无关，未提供关于如何实现语义路由的信息。"
-        },
-        {
-          "question": "LLMLingua 的预算控制器是如何工作的？其主要作用是什么？",
+          "question": "LLMLingua的Budget Controller如何工作？",
           "source": "1025Long context4 提示压缩2.md",
-          "points_found": 2,
-          "total_points": 2,
-          "retrieve_ms": 744.6,
-          "accuracy": 4,
-          "completeness": 3,
-          "relevance": 5,
-          "comment": "回答基于检索资料，但未完全覆盖问题要点，主要集中在LLMLingua的预算控制器上，而非具体的工作原理和作用。"
-        },
-        {
-          "question": "LLMLingua 的迭代令牌级提示压缩（ITPC）算法是如何工作的？其主要特点是什么？",
-          "source": "1025Long context4 提示压缩2.md",
-          "points_found": 2,
-          "total_points": 2,
-          "retrieve_ms": 531.6,
-          "accuracy": 4,
-          "completeness": 3,
-          "relevance": 5,
-          "comment": "回答基于检索资料，但未完全覆盖问题要点，主要描述了ITPC算法的具体步骤，但未提及其特点。"
-        },
-        {
-          "question": "PCW（Parallel context windows）是如何处理长文本问题的？其主要特点是什么？",
-          "source": "1016Long context3-上下文窗口分割 (1)(1).md",
           "points_found": 1,
           "total_points": 2,
-          "retrieve_ms": 592.7,
-          "accuracy": 2,
-          "completeness": 1,
-          "relevance": 4,
-          "comment": "回答偏离主题，未涉及PCW的处理方式和主要特点，而是讨论了NBCE的相关内容。"
-        },
-        {
-          "question": "什么是短期记忆、长期记忆以及混合记忆？它们在智能体中的作用分别是什么？",
-          "source": "25-0121Memory-based agent.md",
-          "points_found": 0,
-          "total_points": 2,
-          "retrieve_ms": 548.4,
-          "accuracy": 3,
-          "completeness": 2,
-          "relevance": 3,
-          "comment": "回答未直接针对问题，而是介绍了智能体的概念及其应用，未能准确解释短期记忆、长期记忆以及混合记忆的具体作用。"
-        },
-        {
-          "question": "量化指的是什么过程？",
-          "source": "0622Quantization.md",
-          "points_found": 0,
-          "total_points": 2,
-          "retrieve_ms": 566.3,
-          "accuracy": 4,
-          "completeness": 4,
-          "relevance": 5,
-          "comment": "回答基于检索资料且较为相关，但主要集中在量化过程的定义上，而非具体的过程或步骤。"
-        },
-        {
-          "question": "什么是MoE模型中的稀疏性？",
-          "source": "Engram.md",
-          "points_found": 1,
-          "total_points": 2,
-          "retrieve_ms": 610.2,
-          "accuracy": 2,
-          "completeness": 1,
-          "relevance": 3,
-          "comment": "检索结果与问题不相关，未提及MoE模型中的稀疏性定义或特性。"
-        },
-        {
-          "question": "Engram如何实现O(1)复杂度的哈希检索？",
-          "source": "Engram.md",
-          "points_found": 1,
-          "total_points": 2,
-          "retrieve_ms": 536.3,
-          "accuracy": 1,
-          "completeness": 1,
-          "relevance": 2,
-          "comment": "检索到的信息与问题部分相关，但没有直接回答Engram如何实现O(1)复杂度的哈希检索。"
-        },
-        {
-          "question": "Monte Carlo 方法的核心思想是什么？",
-          "source": "0806强化学习3蒙特卡洛方法.md",
-          "points_found": 2,
-          "total_points": 2,
-          "retrieve_ms": 599.4,
+          "point_details": [
+            {
+              "point": "预算控制器用于demonstration的压缩，从而粗颗粒度地控制budget",
+              "hit": false
+            },
+            {
+              "point": "按照perplexity进行排序，只保留perplexity高的demonstration",
+              "hit": true
+            }
+          ],
+          "retrieve_ms": 818.1,
           "accuracy": 5,
           "completeness": 5,
           "relevance": 5,
-          "comment": "准确地解释了Monte Carlo方法的核心思想，并且完全覆盖了标准要点。"
+          "comment": "回答完全符合标准要点中的描述，并且准确地解释了LLMLingua预算控制器的工作原理。"
         },
         {
-          "question": "在Monte Carlo 方法中，如何计算状态s下的累计回报v(s)？",
-          "source": "0806强化学习3蒙特卡洛方法.md",
-          "points_found": 1,
+          "question": "什么是数据并行（Data Parallel），以及它在模型训练中的作用？",
+          "source": "0730分布式训练2——DDP.md",
+          "points_found": 2,
           "total_points": 2,
-          "retrieve_ms": 718.2,
-          "accuracy": 4,
-          "completeness": 4,
-          "relevance": 5,
-          "comment": "回答了如何计算状态s下的累计回报v(s)，但信息重复，与问题部分相关。"
-        },
-        {
-          "question": "SAPO解决了MoE模型中的哪些问题？",
-          "source": "SAPO.md",
-          "points_found": 1,
-          "total_points": 2,
-          "retrieve_ms": 474.1,
+          "point_details": [
+            {
+              "point": "将同一个模型复制到多个GPU上，并执行不同的数据分片",
+              "hit": true
+            },
+            {
+              "point": "要求每张卡内都可以完整执行训练过程",
+              "hit": true
+            }
+          ],
+          "retrieve_ms": 940.9,
           "accuracy": 3,
-          "completeness": 3,
-          "relevance": 4,
-          "comment": "解释了SAPO在MoE模型中的应用，但未直接回答SAPO解决了哪些具体问题。"
-        },
-        {
-          "question": "记忆的来源有哪些？",
-          "source": "25-0127Memory-based agent2.md",
-          "points_found": 0,
-          "total_points": 3,
-          "retrieve_ms": 675.7,
-          "accuracy": 1,
           "completeness": 2,
           "relevance": 1,
-          "comment": "回答完全偏离了问题主题，提供的内容是关于XGBoost的参数化和正则化的讨论，与记忆来源无关。"
+          "comment": "检索结果与问题无关，未能提供关于数据并行在模型训练中作用的相关信息。"
         },
         {
-          "question": "参数化形式的记忆存储方法主要分为哪两类？",
-          "source": "25-0127Memory-based agent2.md",
+          "question": "多设备加速比是如何定义的？影响因素有哪些？",
+          "source": "0730分布式训练2——DDP.md",
           "points_found": 0,
           "total_points": 2,
-          "retrieve_ms": 542.7,
+          "point_details": [
+            {
+              "point": "指的是当使用多个计算设备并行处理时，相对于单设备计算速度的加速比例",
+              "hit": false
+            },
+            {
+              "point": "通信开销、负载不均衡等因素",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 955.4,
           "accuracy": 1,
           "completeness": 1,
           "relevance": 1,
-          "comment": "回答完全偏离了问题主题，提供的内容是关于Agent记忆机制和技术报告中关于记忆存储方法的简短描述，与参数化形式的记忆存储方法分类无关。"
+          "comment": "检索结果与问题无关，未能提供关于多设备加速比定义及其影响因素的相关信息。"
+        },
+        {
+          "question": "投机解码（Speculative Decoding）如何提升推理效率？",
+          "source": "投机解码Speculative Decoding.md",
+          "points_found": 1,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "减少解码次数，从而减少通信次数",
+              "hit": true
+            },
+            {
+              "point": "保证生成质量的同时大幅提升了推理效率",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 919.9,
+          "accuracy": 4,
+          "completeness": 3,
+          "relevance": 5,
+          "comment": "回答基本准确，但没有具体解释h= Wor + AW的含义，且缺少了与问题直接相关的部分信息。"
+        },
+        {
+          "question": "什么是Routing在RAG中的作用？",
+          "source": "0528Rag for Scratch——langchain.md",
+          "points_found": 2,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "Routing是RAG pipeline的第二个阶段，目的是依据query的内容路由到正确的数据源。",
+              "hit": true
+            },
+            {
+              "point": "实际上就是一个分类任务。",
+              "hit": true
+            }
+          ],
+          "retrieve_ms": 797.7,
+          "accuracy": 2,
+          "completeness": 1,
+          "relevance": 4,
+          "comment": "检索结果与问题相关性较高，但未能完整覆盖标准要点，仅提供了公式而未解释其具体含义。"
+        },
+        {
+          "question": "如何通过逻辑路由选择正确的索引？",
+          "source": "0528Rag for Scratch——langchain.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "使用function calling得到结构化的输出",
+              "hit": false
+            },
+            {
+              "point": "从多个索引中选择最相关的进行查询，例如：\n- 一个索引包含了所有与LangChain相关的Python文档。\n- 另一个",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 844.9,
+          "accuracy": 3,
+          "completeness": 2,
+          "relevance": 3,
+          "comment": "回答的相关性较好，但准确性较低，提供的信息不完全符合问题要求。"
+        },
+        {
+          "question": "lora 算法中的 h= Wor + AW 如何表示？",
+          "source": "0613 lora.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "h = Wor + AW",
+              "hit": false
+            },
+            {
+              "point": "- e W SRAFY | ERS,",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 976.3,
+          "accuracy": 1,
+          "completeness": 1,
+          "relevance": 4,
+          "comment": "检索结果与问题相关，但未能准确解释d*d 2*r*d公式的含义，且未覆盖所有标准要点。"
+        },
+        {
+          "question": "lora 中的 d*d 2*r*d 公式代表什么含义？",
+          "source": "0613 lora.md",
+          "points_found": 0,
+          "total_points": 1,
+          "point_details": [
+            {
+              "point": "d*d 2*r*d",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 674.6,
+          "accuracy": 3,
+          "completeness": 3,
+          "relevance": 5,
+          "comment": "回答较为完整地解释了lora中的h= Wor + AW公式，相关性高，但准确性有待提高。"
+        },
+        {
+          "question": "如何使用HuggingFace库进行大语言模型的调用？",
+          "source": "1111LangChain3 模型调用和输出解析.md",
+          "points_found": 3,
+          "total_points": 3,
+          "point_details": [
+            {
+              "point": "首先导入分词器和预训练的模型",
+              "hit": true
+            },
+            {
+              "point": "将用户问题转成pytorch张量",
+              "hit": true
+            },
+            {
+              "point": "使用generate方法生成回复",
+              "hit": true
+            }
+          ],
+          "retrieve_ms": 1041.7,
+          "accuracy": 3,
+          "completeness": 2,
+          "relevance": 4,
+          "comment": "回答主要集中在如何调用大语言模型上，但没有直接回答如何使用HuggingFace库进行调用的具体步骤。此外，提供的信息与问题的相关性较高，但完整性不足。"
+        },
+        {
+          "question": "在进行大语言模型调用时，如何确保响应文本的正确性？",
+          "source": "1111LangChain3 模型调用和输出解析.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "使用分词器的decode方法将生成的令牌解码成文本",
+              "hit": false
+            },
+            {
+              "point": "跳过任何特殊的令牌",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 997.5,
+          "accuracy": 2,
+          "completeness": 1,
+          "relevance": 3,
+          "comment": "检索结果偏离了问题核心，没有直接回答如何确保响应文本的正确性。虽然提到了RAG和Agent的概念，但与问题的相关性一般。"
+        },
+        {
+          "question": "什么是rag pipeline的第四阶段？",
+          "source": "0530Rag for Scratch——langchain.md",
+          "points_found": 2,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "indexing是rag pipeline的第四阶段",
+              "hit": true
+            },
+            {
+              "point": "就是将文档压缩为数值表示，以建立索引，便于后续的检索和生成",
+              "hit": true
+            }
+          ],
+          "retrieve_ms": 1039.0,
+          "accuracy": 4,
+          "completeness": 4,
+          "relevance": 5,
+          "comment": "回答准确地指出了rag pipeline第四阶段是indexing，并且详细解释了其含义及过程。完整性高，相关性强。"
         }
       ]
     },
     {
       "config": "+sentence_window",
-      "total_queries": 22,
-      "avg_points_coverage": 0.561,
-      "avg_accuracy": 3.05,
-      "avg_completeness": 2.82,
-      "avg_relevance": 4.27,
-      "avg_retrieve_ms": 563.6,
-      "avg_generate_ms": 7630.5,
+      "total_queries": 13,
+      "avg_points_coverage": 0.423,
+      "avg_accuracy": 2.85,
+      "avg_completeness": 2.15,
+      "avg_relevance": 3.85,
+      "avg_retrieve_ms": 899.9,
+      "avg_generate_ms": 6954.1,
       "details": [
         {
-          "question": "Qwen3-VL在架构方面做了哪些改进？",
-          "source": "Qwen3-VL技术报告解读.md",
-          "points_found": 3,
-          "total_points": 3,
-          "retrieve_ms": 477.9,
+          "question": "为什么在缺少few-shot样本的情况下，CoD方法的表现会大幅下降？",
+          "source": "Chain of Draft.md",
+          "points_found": 1,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "训练数据中缺乏CoD风格的推理样本。",
+              "hit": false
+            },
+            {
+              "point": "小模型表达能力较弱，难以兼顾简洁和信息完整。",
+              "hit": true
+            }
+          ],
+          "retrieve_ms": 1143.2,
           "accuracy": 4,
           "completeness": 3,
           "relevance": 5,
-          "comment": "回答准确地提到了交错-MRoPE的概念，但未提及标准要点中的DeepStack和基于文本的时间对齐机制。"
+          "comment": "回答主要集中在CoD方法的表现下降原因上，但没有直接回答为什么在缺少few-shot样本的情况下表现会大幅下降。"
         },
         {
-          "question": "Qwen3-VL的训练流程分为哪几个阶段？",
-          "source": "Qwen3-VL技术报告解读.md",
+          "question": "如何计算指令微调的损失函数？",
+          "source": "0601指令微调.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "loss = r(A) - r(B) + r(A) - r(C) + r(A) - r(D) + r(B) - r(C)",
+              "hit": false
+            },
+            {
+              "point": "loss = -loss",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 779.5,
+          "accuracy": 1,
+          "completeness": 1,
+          "relevance": 1,
+          "comment": "检索结果与问题无关，讨论的是Bagging和Boosting的概念，完全偏离了主题。"
+        },
+        {
+          "question": "LLMLingua的Budget Controller如何工作？",
+          "source": "1025Long context4 提示压缩2.md",
+          "points_found": 1,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "预算控制器用于demonstration的压缩，从而粗颗粒度地控制budget",
+              "hit": false
+            },
+            {
+              "point": "按照perplexity进行排序，只保留perplexity高的demonstration",
+              "hit": true
+            }
+          ],
+          "retrieve_ms": 820.6,
+          "accuracy": 4,
+          "completeness": 3,
+          "relevance": 5,
+          "comment": "回答主要集中在LLMLingua的Budget Controller如何工作上，但没有直接回答预算控制器是如何工作的核心机制。"
+        },
+        {
+          "question": "什么是数据并行（Data Parallel），以及它在模型训练中的作用？",
+          "source": "0730分布式训练2——DDP.md",
           "points_found": 2,
           "total_points": 2,
-          "retrieve_ms": 582.1,
+          "point_details": [
+            {
+              "point": "将同一个模型复制到多个GPU上，并执行不同的数据分片",
+              "hit": true
+            },
+            {
+              "point": "要求每张卡内都可以完整执行训练过程",
+              "hit": true
+            }
+          ],
+          "retrieve_ms": 995.4,
           "accuracy": 2,
           "completeness": 1,
           "relevance": 4,
-          "comment": "回答没有提到训练流程的四个阶段，仅提到了后训练的三个阶段。此外，回答与问题相关，但不完整。"
+          "comment": "检索结果与问题偏离较远，讨论的是Data Parallel在模型训练中的作用和局限性，而非多设备加速比的定义及其影响因素。"
         },
         {
-          "question": "PagedAttention如何管理KV缓存？",
-          "source": "Pageattention.md",
+          "question": "多设备加速比是如何定义的？影响因素有哪些？",
+          "source": "0730分布式训练2——DDP.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "指的是当使用多个计算设备并行处理时，相对于单设备计算速度的加速比例",
+              "hit": false
+            },
+            {
+              "point": "通信开销、负载不均衡等因素",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 1022.0,
+          "accuracy": 3,
+          "completeness": 2,
+          "relevance": 5,
+          "comment": "回答主要集中在Bagging和Boosting的概念上，没有直接回答多设备加速比的定义及其影响因素。"
+        },
+        {
+          "question": "投机解码（Speculative Decoding）如何提升推理效率？",
+          "source": "投机解码Speculative Decoding.md",
           "points_found": 1,
           "total_points": 2,
-          "retrieve_ms": 659.6,
-          "accuracy": 5,
-          "completeness": 4,
+          "point_details": [
+            {
+              "point": "减少解码次数，从而减少通信次数",
+              "hit": true
+            },
+            {
+              "point": "保证生成质量的同时大幅提升了推理效率",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 856.0,
+          "accuracy": 4,
+          "completeness": 3,
           "relevance": 5,
-          "comment": "回答准确地描述了PagedAttention的优点，并且完全覆盖了标准要点中的内容。"
+          "comment": "回答基本准确，但没有明确指出h= Wor + AW的具体含义。"
         },
         {
-          "question": "PagedAttention的优点有哪些？",
-          "source": "Pageattention.md",
-          "points_found": 1,
+          "question": "什么是Routing在RAG中的作用？",
+          "source": "0528Rag for Scratch——langchain.md",
+          "points_found": 2,
           "total_points": 2,
-          "retrieve_ms": 512.9,
-          "accuracy": 5,
-          "completeness": 5,
-          "relevance": 5,
-          "comment": "回答准确地描述了Lora模型中的h表达式，并且完全覆盖了标准要点中的内容。"
+          "point_details": [
+            {
+              "point": "Routing是RAG pipeline的第二个阶段，目的是依据query的内容路由到正确的数据源。",
+              "hit": true
+            },
+            {
+              "point": "实际上就是一个分类任务。",
+              "hit": true
+            }
+          ],
+          "retrieve_ms": 836.7,
+          "accuracy": 2,
+          "completeness": 1,
+          "relevance": 4,
+          "comment": "检索结果与问题无关，未提及Routing在RAG中的作用。"
         },
         {
-          "question": "lora模型中的h表达式是什么？",
+          "question": "如何通过逻辑路由选择正确的索引？",
+          "source": "0528Rag for Scratch——langchain.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "使用function calling得到结构化的输出",
+              "hit": false
+            },
+            {
+              "point": "从多个索引中选择最相关的进行查询，例如：\n- 一个索引包含了所有与LangChain相关的Python文档。\n- 另一个",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 773.4,
+          "accuracy": 3,
+          "completeness": 2,
+          "relevance": 3,
+          "comment": "回答涉及向量索引技术，但未直接回答如何通过逻辑路由选择正确的索引。"
+        },
+        {
+          "question": "lora 算法中的 h= Wor + AW 如何表示？",
+          "source": "0613 lora.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "h = Wor + AW",
+              "hit": false
+            },
+            {
+              "point": "- e W SRAFY | ERS,",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 796.4,
+          "accuracy": 1,
+          "completeness": 1,
+          "relevance": 2,
+          "comment": "检索结果与问题无关，未解释d*d 2*r*d公式的含义。"
+        },
+        {
+          "question": "lora 中的 d*d 2*r*d 公式代表什么含义？",
           "source": "0613 lora.md",
           "points_found": 0,
           "total_points": 1,
-          "retrieve_ms": 516.7,
+          "point_details": [
+            {
+              "point": "d*d 2*r*d",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 599.9,
+          "accuracy": 3,
+          "completeness": 3,
+          "relevance": 4,
+          "comment": "回答涉及注意力机制的优化，但没有直接解释d*d 2*r*d的具体含义。"
+        },
+        {
+          "question": "如何使用HuggingFace库进行大语言模型的调用？",
+          "source": "1111LangChain3 模型调用和输出解析.md",
+          "points_found": 3,
+          "total_points": 3,
+          "point_details": [
+            {
+              "point": "首先导入分词器和预训练的模型",
+              "hit": true
+            },
+            {
+              "point": "将用户问题转成pytorch张量",
+              "hit": true
+            },
+            {
+              "point": "使用generate方法生成回复",
+              "hit": true
+            }
+          ],
+          "retrieve_ms": 1320.2,
+          "accuracy": 2,
+          "completeness": 1,
+          "relevance": 3,
+          "comment": "回答偏离了标准要点，没有提及如何导入模型和分词器、生成输入张量等关键步骤。"
+        },
+        {
+          "question": "在进行大语言模型调用时，如何确保响应文本的正确性？",
+          "source": "1111LangChain3 模型调用和输出解析.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "使用分词器的decode方法将生成的令牌解码成文本",
+              "hit": false
+            },
+            {
+              "point": "跳过任何特殊的令牌",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 895.2,
           "accuracy": 3,
           "completeness": 2,
           "relevance": 4,
-          "comment": "回答提到了PagedAttention的优点，但没有具体提到标准要点中的按需分配和跨请求KVCache共享。此外，回答与问题相关，但不完整。"
+          "comment": "回答涉及了一些相关概念，但未能直接回答问题核心，即确保响应文本正确性的具体方法。"
         },
         {
-          "question": "在生成自定义任务的数据集中，如何确保新指令的多样性？",
-          "source": "0605指令微调数据集.md",
+          "question": "什么是rag pipeline的第四阶段？",
+          "source": "0530Rag for Scratch——langchain.md",
           "points_found": 2,
           "total_points": 2,
-          "retrieve_ms": 688.3,
-          "accuracy": 2,
-          "completeness": 1,
-          "relevance": 3,
-          "comment": "回答与问题不相关，提供的信息是关于数据解析和数据集准备的细节，而不是如何确保指令多样性。"
-        },
-        {
-          "question": "ROUGE-L衡量的是什么？其值范围是什么？",
-          "source": "0605指令微调数据集.md",
-          "points_found": 2,
-          "total_points": 2,
-          "retrieve_ms": 532.9,
-          "accuracy": 4,
+          "point_details": [
+            {
+              "point": "indexing是rag pipeline的第四阶段",
+              "hit": true
+            },
+            {
+              "point": "就是将文档压缩为数值表示，以建立索引，便于后续的检索和生成",
+              "hit": true
+            }
+          ],
+          "retrieve_ms": 860.5,
+          "accuracy": 5,
           "completeness": 5,
           "relevance": 5,
-          "comment": "准确地解释了ROUGE-L的定义及其值范围，并且覆盖了所有标准要点。"
-        },
-        {
-          "question": "Hyper-Connections（HC）是如何工作的？",
-          "source": "重构残差连接：DeepSeek mHC 架构中的几何与数学原理.md",
-          "points_found": 2,
-          "total_points": 2,
-          "retrieve_ms": 542.3,
-          "accuracy": 1,
-          "completeness": 2,
-          "relevance": 3,
-          "comment": "回答与问题不相关，提供的信息是关于Hyper-Connections在DeepSeek mHC架构中的数学原理和实现细节，而不是如何工作的具体解释。"
-        },
-        {
-          "question": "Routing在RAG pipeline中的作用是什么？",
-          "source": "0528Rag for Scratch——langchain.md",
-          "points_found": 1,
-          "total_points": 2,
-          "retrieve_ms": 544.0,
-          "accuracy": 4,
-          "completeness": 5,
-          "relevance": 5,
-          "comment": "准确地描述了Routing在RAG pipeline中的作用，并且覆盖了所有标准要点。"
-        },
-        {
-          "question": "如何实现语义路由？",
-          "source": "0528Rag for Scratch——langchain.md",
-          "points_found": 0,
-          "total_points": 2,
-          "retrieve_ms": 581.6,
-          "accuracy": 1,
-          "completeness": 2,
-          "relevance": 3,
-          "comment": "回答与问题不相关，提供的信息是关于XGBoost的原理和实现细节，而不是如何实现语义路由的具体方法。"
-        },
-        {
-          "question": "LLMLingua 的预算控制器是如何工作的？其主要作用是什么？",
-          "source": "1025Long context4 提示压缩2.md",
-          "points_found": 2,
-          "total_points": 2,
-          "retrieve_ms": 695.3,
-          "accuracy": 4,
-          "completeness": 3,
-          "relevance": 5,
-          "comment": "回答基于检索资料，但未完全覆盖标准要点，且部分信息冗余。"
-        },
-        {
-          "question": "LLMLingua 的迭代令牌级提示压缩（ITPC）算法是如何工作的？其主要特点是什么？",
-          "source": "1025Long context4 提示压缩2.md",
-          "points_found": 2,
-          "total_points": 2,
-          "retrieve_ms": 539.3,
-          "accuracy": 4,
-          "completeness": 3,
-          "relevance": 5,
-          "comment": "回答基于检索资料，但未完全覆盖标准要点，且部分信息冗余。"
-        },
-        {
-          "question": "PCW（Parallel context windows）是如何处理长文本问题的？其主要特点是什么？",
-          "source": "1016Long context3-上下文窗口分割 (1)(1).md",
-          "points_found": 1,
-          "total_points": 2,
-          "retrieve_ms": 605.2,
-          "accuracy": 4,
-          "completeness": 2,
-          "relevance": 5,
-          "comment": "回答基于检索资料，但仅部分覆盖了标准要点，且内容较为复杂。"
-        },
-        {
-          "question": "什么是短期记忆、长期记忆以及混合记忆？它们在智能体中的作用分别是什么？",
-          "source": "25-0121Memory-based agent.md",
-          "points_found": 0,
-          "total_points": 2,
-          "retrieve_ms": 574.5,
-          "accuracy": 1,
-          "completeness": 1,
-          "relevance": 3,
-          "comment": "回答未基于检索资料，且与问题不相关，未能解释短期记忆、长期记忆以及混合记忆的概念及其作用。"
-        },
-        {
-          "question": "量化指的是什么过程？",
-          "source": "0622Quantization.md",
-          "points_found": 0,
-          "total_points": 2,
-          "retrieve_ms": 547.7,
-          "accuracy": 4,
-          "completeness": 2,
-          "relevance": 5,
-          "comment": "回答基于检索资料，但仅部分覆盖了标准要点，且内容较为复杂。"
-        },
-        {
-          "question": "什么是MoE模型中的稀疏性？",
-          "source": "Engram.md",
-          "points_found": 1,
-          "total_points": 2,
-          "retrieve_ms": 615.9,
-          "accuracy": 2,
-          "completeness": 1,
-          "relevance": 3,
-          "comment": "回答偏离了问题核心，没有直接解释MoE模型中的稀疏性概念。"
-        },
-        {
-          "question": "Engram如何实现O(1)复杂度的哈希检索？",
-          "source": "Engram.md",
-          "points_found": 1,
-          "total_points": 2,
-          "retrieve_ms": 504.0,
-          "accuracy": 4,
-          "completeness": 3,
-          "relevance": 5,
-          "comment": "虽然提到了Engram实现O(1)复杂度的哈希检索的相关信息，但并未具体回答如何实现。"
-        },
-        {
-          "question": "Monte Carlo 方法的核心思想是什么？",
-          "source": "0806强化学习3蒙特卡洛方法.md",
-          "points_found": 2,
-          "total_points": 2,
-          "retrieve_ms": 518.1,
-          "accuracy": 4,
-          "completeness": 4,
-          "relevance": 5,
-          "comment": "准确地解释了Monte Carlo方法的核心思想，并且完全覆盖了标准要点。"
-        },
-        {
-          "question": "在Monte Carlo 方法中，如何计算状态s下的累计回报v(s)？",
-          "source": "0806强化学习3蒙特卡洛方法.md",
-          "points_found": 1,
-          "total_points": 2,
-          "retrieve_ms": 527.5,
-          "accuracy": 3,
-          "completeness": 4,
-          "relevance": 5,
-          "comment": "回答重复了问题3的内容，但直接回答了如何计算状态s下的累计回报v(s)。"
-        },
-        {
-          "question": "SAPO解决了MoE模型中的哪些问题？",
-          "source": "SAPO.md",
-          "points_found": 1,
-          "total_points": 2,
-          "retrieve_ms": 562.7,
-          "accuracy": 4,
-          "completeness": 5,
-          "relevance": 5,
-          "comment": "准确地解释了SAPO在MoE模型中的应用，并且完全覆盖了标准要点。"
-        },
-        {
-          "question": "记忆的来源有哪些？",
-          "source": "25-0127Memory-based agent2.md",
-          "points_found": 1,
-          "total_points": 3,
-          "retrieve_ms": 574.7,
-          "accuracy": 1,
-          "completeness": 2,
-          "relevance": 3,
-          "comment": "回答完全偏离了问题主题，提供的信息是关于机器学习中的Bagging和Boosting方法的介绍，与记忆来源无关。"
-        },
-        {
-          "question": "参数化形式的记忆存储方法主要分为哪两类？",
-          "source": "25-0127Memory-based agent2.md",
-          "points_found": 0,
-          "total_points": 2,
-          "retrieve_ms": 495.5,
-          "accuracy": 1,
-          "completeness": 2,
-          "relevance": 3,
-          "comment": "回答完全偏离了问题主题，提供的信息是关于人类反馈强化学习（CoH）和算法蒸馏（AD）的方法介绍，与参数化形式的记忆存储方法无关。"
+          "comment": "准确地指出了rag pipeline的第四阶段，并且解释了该阶段的具体内容，完全符合标准要点。"
         }
       ]
     },
     {
-      "config": "+context_expansion",
-      "total_queries": 22,
-      "avg_points_coverage": 0.561,
-      "avg_accuracy": 2.73,
-      "avg_completeness": 2.36,
-      "avg_relevance": 3.95,
-      "avg_retrieve_ms": 544.2,
-      "avg_generate_ms": 7601.4,
+      "config": "+denoise",
+      "total_queries": 13,
+      "avg_points_coverage": 0.167,
+      "avg_accuracy": 3.31,
+      "avg_completeness": 2.54,
+      "avg_relevance": 4.23,
+      "avg_retrieve_ms": 1328.4,
+      "avg_generate_ms": 6093.8,
       "details": [
         {
-          "question": "Qwen3-VL在架构方面做了哪些改进？",
-          "source": "Qwen3-VL技术报告解读.md",
-          "points_found": 3,
-          "total_points": 3,
-          "retrieve_ms": 485.9,
+          "question": "为什么在缺少few-shot样本的情况下，CoD方法的表现会大幅下降？",
+          "source": "Chain of Draft.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "训练数据中缺乏CoD风格的推理样本。",
+              "hit": false
+            },
+            {
+              "point": "小模型表达能力较弱，难以兼顾简洁和信息完整。",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 1950.2,
+          "accuracy": 4,
+          "completeness": 3,
+          "relevance": 5,
+          "comment": ""
+        },
+        {
+          "question": "如何计算指令微调的损失函数？",
+          "source": "0601指令微调.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "loss = r(A) - r(B) + r(A) - r(C) + r(A) - r(D) + r(B) - r(C)",
+              "hit": false
+            },
+            {
+              "point": "loss = -loss",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 1387.5,
           "accuracy": 2,
           "completeness": 1,
           "relevance": 3,
-          "comment": "回答没有直接提到Qwen3-VL的架构改进，而是讨论了SiLU等技术细节。"
+          "comment": ""
         },
         {
-          "question": "Qwen3-VL的训练流程分为哪几个阶段？",
-          "source": "Qwen3-VL技术报告解读.md",
-          "points_found": 2,
+          "question": "LLMLingua的Budget Controller如何工作？",
+          "source": "1025Long context4 提示压缩2.md",
+          "points_found": 0,
           "total_points": 2,
-          "retrieve_ms": 567.6,
-          "accuracy": 1,
-          "completeness": 2,
-          "relevance": 4,
-          "comment": "回答主要集中在训练流程的不同阶段，但未明确指出PagedAttention的优点。"
-        },
-        {
-          "question": "PagedAttention如何管理KV缓存？",
-          "source": "Pageattention.md",
-          "points_found": 1,
-          "total_points": 2,
-          "retrieve_ms": 672.1,
-          "accuracy": 3,
-          "completeness": 3,
-          "relevance": 5,
-          "comment": "回答准确地描述了PagedAttention的管理方式，并且涵盖了标准要点。"
-        },
-        {
-          "question": "PagedAttention的优点有哪些？",
-          "source": "Pageattention.md",
-          "points_found": 1,
-          "total_points": 2,
-          "retrieve_ms": 526.2,
+          "point_details": [
+            {
+              "point": "预算控制器用于demonstration的压缩，从而粗颗粒度地控制budget",
+              "hit": false
+            },
+            {
+              "point": "按照perplexity进行排序，只保留perplexity高的demonstration",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 1541.2,
           "accuracy": 4,
           "completeness": 4,
-          "relevance": 5,
-          "comment": "回答准确并完整地列出了Lora模型中h表达式的公式，相关性高。"
+          "relevance": 4,
+          "comment": ""
         },
         {
-          "question": "lora模型中的h表达式是什么？",
+          "question": "什么是数据并行（Data Parallel），以及它在模型训练中的作用？",
+          "source": "0730分布式训练2——DDP.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "将同一个模型复制到多个GPU上，并执行不同的数据分片",
+              "hit": false
+            },
+            {
+              "point": "要求每张卡内都可以完整执行训练过程",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 1449.8,
+          "accuracy": 3,
+          "completeness": 2,
+          "relevance": 2,
+          "comment": ""
+        },
+        {
+          "question": "多设备加速比是如何定义的？影响因素有哪些？",
+          "source": "0730分布式训练2——DDP.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "指的是当使用多个计算设备并行处理时，相对于单设备计算速度的加速比例",
+              "hit": false
+            },
+            {
+              "point": "通信开销、负载不均衡等因素",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 1101.6,
+          "accuracy": 3,
+          "completeness": 3,
+          "relevance": 3,
+          "comment": ""
+        },
+        {
+          "question": "投机解码（Speculative Decoding）如何提升推理效率？",
+          "source": "投机解码Speculative Decoding.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "减少解码次数，从而减少通信次数",
+              "hit": false
+            },
+            {
+              "point": "保证生成质量的同时大幅提升了推理效率",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 1466.0,
+          "accuracy": 4,
+          "completeness": 3,
+          "relevance": 5,
+          "comment": "回答基本准确，但没有明确指出如何通过逻辑路由选择正确的索引，而是提供了关于向量索引技术的背景信息。"
+        },
+        {
+          "question": "什么是Routing在RAG中的作用？",
+          "source": "0528Rag for Scratch——langchain.md",
+          "points_found": 1,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "Routing是RAG pipeline的第二个阶段，目的是依据query的内容路由到正确的数据源。",
+              "hit": true
+            },
+            {
+              "point": "实际上就是一个分类任务。",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 1228.7,
+          "accuracy": 2,
+          "completeness": 1,
+          "relevance": 4,
+          "comment": "回答主要集中在Lora算法的相关内容上，与问题不相关。没有提及Routing在RAG中的作用。"
+        },
+        {
+          "question": "如何通过逻辑路由选择正确的索引？",
+          "source": "0528Rag for Scratch——langchain.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "使用function calling得到结构化的输出",
+              "hit": false
+            },
+            {
+              "point": "从多个索引中选择最相关的进行查询，例如：\n- 一个索引包含了所有与LangChain相关的Python文档。\n- 另一个",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 978.1,
+          "accuracy": 3,
+          "completeness": 2,
+          "relevance": 5,
+          "comment": "回答涉及了lora算法中h= Wor + AW的表示方式，但没有解释d*d 2*r*d公式的含义。"
+        },
+        {
+          "question": "lora 算法中的 h= Wor + AW 如何表示？",
+          "source": "0613 lora.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "h = Wor + AW",
+              "hit": false
+            },
+            {
+              "point": "- e W SRAFY | ERS,",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 1204.7,
+          "accuracy": 4,
+          "completeness": 3,
+          "relevance": 5,
+          "comment": "回答基本准确，但没有明确指出Lora算法中的d*d 2*r*d公式代表什么含义。"
+        },
+        {
+          "question": "lora 中的 d*d 2*r*d 公式代表什么含义？",
           "source": "0613 lora.md",
           "points_found": 0,
           "total_points": 1,
-          "retrieve_ms": 562.4,
-          "accuracy": 3,
-          "completeness": 3,
-          "relevance": 5,
-          "comment": "回答准确且完整地描述了Lora中的h表达式，并且与问题高度相关。"
-        },
-        {
-          "question": "在生成自定义任务的数据集中，如何确保新指令的多样性？",
-          "source": "0605指令微调数据集.md",
-          "points_found": 2,
-          "total_points": 2,
-          "retrieve_ms": 618.6,
-          "accuracy": 1,
-          "completeness": 2,
-          "relevance": 3,
-          "comment": "回答与问题无关，提供的信息是关于数据集准备和ROUGE-L的定义，而非如何确保指令多样性。"
-        },
-        {
-          "question": "ROUGE-L衡量的是什么？其值范围是什么？",
-          "source": "0605指令微调数据集.md",
-          "points_found": 2,
-          "total_points": 2,
-          "retrieve_ms": 504.9,
-          "accuracy": 5,
-          "completeness": 4,
-          "relevance": 5,
-          "comment": "回答准确地解释了ROUGE-L的含义及其值范围，但缺少具体的标准要点中的某些细节。"
-        },
-        {
-          "question": "Hyper-Connections（HC）是如何工作的？",
-          "source": "重构残差连接：DeepSeek mHC 架构中的几何与数学原理.md",
-          "points_found": 2,
-          "total_points": 2,
-          "retrieve_ms": 514.9,
-          "accuracy": 2,
-          "completeness": 1,
-          "relevance": 3,
-          "comment": "回答与问题无关，提供的信息是关于Hyper-Connections的数学原理和实现方法，而非如何在RAG中工作。"
-        },
-        {
-          "question": "Routing在RAG pipeline中的作用是什么？",
-          "source": "0528Rag for Scratch——langchain.md",
-          "points_found": 1,
-          "total_points": 2,
-          "retrieve_ms": 501.6,
-          "accuracy": 4,
-          "completeness": 2,
-          "relevance": 5,
-          "comment": "回答部分相关，但没有直接解释Routing在RAG中的作用，而是讨论了Prompt Chaining和Tool Use等概念。"
-        },
-        {
-          "question": "如何实现语义路由？",
-          "source": "0528Rag for Scratch——langchain.md",
-          "points_found": 0,
-          "total_points": 2,
-          "retrieve_ms": 514.3,
-          "accuracy": 1,
-          "completeness": 1,
-          "relevance": 3,
-          "comment": "回答与问题无关，提供的信息是关于XGBoost的原理和技术细节，而非如何实现语义路由。"
-        },
-        {
-          "question": "LLMLingua 的预算控制器是如何工作的？其主要作用是什么？",
-          "source": "1025Long context4 提示压缩2.md",
-          "points_found": 2,
-          "total_points": 2,
-          "retrieve_ms": 604.3,
-          "accuracy": 4,
-          "completeness": 3,
-          "relevance": 5,
-          "comment": "回答基于检索资料，但未完全覆盖标准要点，特别是缺少关于LLMLingua预算控制器的具体工作方式的描述。"
-        },
-        {
-          "question": "LLMLingua 的迭代令牌级提示压缩（ITPC）算法是如何工作的？其主要特点是什么？",
-          "source": "1025Long context4 提示压缩2.md",
-          "points_found": 2,
-          "total_points": 2,
-          "retrieve_ms": 536.1,
-          "accuracy": 4,
-          "completeness": 3,
-          "relevance": 5,
-          "comment": "回答基于检索资料，但未完全覆盖标准要点，特别是缺少ITPC算法的具体工作步骤和特点。"
-        },
-        {
-          "question": "PCW（Parallel context windows）是如何处理长文本问题的？其主要特点是什么？",
-          "source": "1016Long context3-上下文窗口分割 (1)(1).md",
-          "points_found": 1,
-          "total_points": 2,
-          "retrieve_ms": 602.1,
-          "accuracy": 2,
-          "completeness": 1,
-          "relevance": 4,
-          "comment": "回答与问题相关，但主要讨论了PCW的原理而非短期记忆、长期记忆以及混合记忆的概念及其作用。"
-        },
-        {
-          "question": "什么是短期记忆、长期记忆以及混合记忆？它们在智能体中的作用分别是什么？",
-          "source": "25-0121Memory-based agent.md",
-          "points_found": 0,
-          "total_points": 2,
-          "retrieve_ms": 551.2,
+          "point_details": [
+            {
+              "point": "d*d 2*r*d",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 1209.9,
           "accuracy": 3,
           "completeness": 2,
-          "relevance": 4,
-          "comment": "回答涉及智能体分类，但未具体解释短期记忆、长期记忆和混合记忆的概念及其在智能体中的作用。"
-        },
-        {
-          "question": "量化指的是什么过程？",
-          "source": "0622Quantization.md",
-          "points_found": 0,
-          "total_points": 2,
-          "retrieve_ms": 536.4,
-          "accuracy": 4,
-          "completeness": 3,
           "relevance": 5,
-          "comment": "回答基于检索资料，但主要讨论了量化索引技术而非量化过程的定义。"
+          "comment": "回答涉及了lora算法的相关内容，但没有解释d*d 2*r*d公式的具体含义。"
         },
         {
-          "question": "什么是MoE模型中的稀疏性？",
-          "source": "Engram.md",
-          "points_found": 1,
-          "total_points": 2,
-          "retrieve_ms": 576.6,
-          "accuracy": 2,
-          "completeness": 1,
-          "relevance": 3,
-          "comment": "答案没有直接回答问题，提供的信息与问题不相关，且未覆盖标准要点。"
-        },
-        {
-          "question": "Engram如何实现O(1)复杂度的哈希检索？",
-          "source": "Engram.md",
-          "points_found": 1,
-          "total_points": 2,
-          "retrieve_ms": 490.4,
-          "accuracy": 4,
-          "completeness": 3,
-          "relevance": 5,
-          "comment": "虽然检索到了相关信息，但答案过于宽泛，并未具体说明Engram如何实现O(1)复杂度的哈希检索。"
-        },
-        {
-          "question": "Monte Carlo 方法的核心思想是什么？",
-          "source": "0806强化学习3蒙特卡洛方法.md",
+          "question": "如何使用HuggingFace库进行大语言模型的调用？",
+          "source": "1111LangChain3 模型调用和输出解析.md",
           "points_found": 2,
-          "total_points": 2,
-          "retrieve_ms": 506.6,
-          "accuracy": 4,
-          "completeness": 4,
-          "relevance": 5,
-          "comment": "回答准确地解释了Monte Carlo方法的核心思想，并且覆盖了标准要点，但可以更简洁明了。"
-        },
-        {
-          "question": "在Monte Carlo 方法中，如何计算状态s下的累计回报v(s)？",
-          "source": "0806强化学习3蒙特卡洛方法.md",
-          "points_found": 1,
-          "total_points": 2,
-          "retrieve_ms": 509.8,
-          "accuracy": 3,
-          "completeness": 4,
-          "relevance": 5,
-          "comment": "答案虽然准确，但是没有直接回答如何计算状态s下的累计回报v(s)，而是提供了相关背景信息。"
-        },
-        {
-          "question": "SAPO解决了MoE模型中的哪些问题？",
-          "source": "SAPO.md",
-          "points_found": 1,
-          "total_points": 2,
-          "retrieve_ms": 537.7,
-          "accuracy": 2,
-          "completeness": 1,
-          "relevance": 3,
-          "comment": "答案没有直接回答问题，提供的信息与问题不相关，且未覆盖标准要点。"
-        },
-        {
-          "question": "记忆的来源有哪些？",
-          "source": "25-0127Memory-based agent2.md",
-          "points_found": 1,
           "total_points": 3,
-          "retrieve_ms": 576.6,
-          "accuracy": 1,
-          "completeness": 2,
-          "relevance": 1,
-          "comment": "回答完全偏离了问题主题，提供的信息与记忆的来源无关，而是关于机器学习中的Bagging和Boosting方法。"
+          "point_details": [
+            {
+              "point": "首先导入分词器和预训练的模型",
+              "hit": true
+            },
+            {
+              "point": "将用户问题转成pytorch张量",
+              "hit": true
+            },
+            {
+              "point": "使用generate方法生成回复",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 1175.5,
+          "accuracy": 4,
+          "completeness": 3,
+          "relevance": 5,
+          "comment": "回答基本准确地指出了RAG系统中索引阶段的作用，但没有完全覆盖标准要点中的所有信息。"
         },
         {
-          "question": "参数化形式的记忆存储方法主要分为哪两类？",
-          "source": "25-0127Memory-based agent2.md",
+          "question": "在进行大语言模型调用时，如何确保响应文本的正确性？",
+          "source": "1111LangChain3 模型调用和输出解析.md",
           "points_found": 0,
           "total_points": 2,
-          "retrieve_ms": 475.1,
-          "accuracy": 1,
-          "completeness": 2,
-          "relevance": 1,
-          "comment": "回答完全偏离了问题主题，提供的信息与参数化形式的记忆存储方法无关，而是关于人类反馈数据和算法蒸馏的概念。"
+          "point_details": [
+            {
+              "point": "使用分词器的decode方法将生成的令牌解码成文本",
+              "hit": false
+            },
+            {
+              "point": "跳过任何特殊的令牌",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 1296.7,
+          "accuracy": 2,
+          "completeness": 1,
+          "relevance": 4,
+          "comment": "答案主要集中在如何确保响应文本的正确性上，与问题不符，偏离了主题。"
+        },
+        {
+          "question": "什么是rag pipeline的第四阶段？",
+          "source": "0530Rag for Scratch——langchain.md",
+          "points_found": 2,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "indexing是rag pipeline的第四阶段",
+              "hit": true
+            },
+            {
+              "point": "就是将文档压缩为数值表示，以建立索引，便于后续的检索和生成",
+              "hit": true
+            }
+          ],
+          "retrieve_ms": 1279.9,
+          "accuracy": 5,
+          "completeness": 5,
+          "relevance": 5,
+          "comment": "回答完全符合标准要点，并且准确地描述了RAG pipeline中索引阶段的内容。"
         }
       ]
     },
     {
-      "config": "+both_plugins",
-      "total_queries": 22,
-      "avg_points_coverage": 0.561,
-      "avg_accuracy": 3.09,
-      "avg_completeness": 2.73,
-      "avg_relevance": 4.0,
-      "avg_retrieve_ms": 593.6,
-      "avg_generate_ms": 7875.8,
+      "config": "+window_denoise",
+      "total_queries": 13,
+      "avg_points_coverage": 0.141,
+      "avg_accuracy": 3.31,
+      "avg_completeness": 2.38,
+      "avg_relevance": 4.46,
+      "avg_retrieve_ms": 1449.3,
+      "avg_generate_ms": 6891.0,
       "details": [
         {
-          "question": "Qwen3-VL在架构方面做了哪些改进？",
-          "source": "Qwen3-VL技术报告解读.md",
-          "points_found": 3,
-          "total_points": 3,
-          "retrieve_ms": 416.4,
+          "question": "为什么在缺少few-shot样本的情况下，CoD方法的表现会大幅下降？",
+          "source": "Chain of Draft.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "训练数据中缺乏CoD风格的推理样本。",
+              "hit": false
+            },
+            {
+              "point": "小模型表达能力较弱，难以兼顾简洁和信息完整。",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 1426.4,
           "accuracy": 4,
           "completeness": 3,
           "relevance": 5,
-          "comment": "回答基于检索资料，但未提及PagedAttention的具体优点，仅提供了部分信息。"
+          "comment": "回答基本准确，但没有明确指出CoD方法在缺少few-shot样本时表现下降的具体原因。"
         },
         {
-          "question": "Qwen3-VL的训练流程分为哪几个阶段？",
-          "source": "Qwen3-VL技术报告解读.md",
-          "points_found": 2,
+          "question": "如何计算指令微调的损失函数？",
+          "source": "0601指令微调.md",
+          "points_found": 0,
           "total_points": 2,
-          "retrieve_ms": 536.5,
+          "point_details": [
+            {
+              "point": "loss = r(A) - r(B) + r(A) - r(C) + r(A) - r(D) + r(B) - r(C)",
+              "hit": false
+            },
+            {
+              "point": "loss = -loss",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 1490.8,
+          "accuracy": 2,
+          "completeness": 1,
+          "relevance": 3,
+          "comment": "检索结果与问题关联性不强，且信息混乱，难以理解如何计算指令微调的损失函数。"
+        },
+        {
+          "question": "LLMLingua的Budget Controller如何工作？",
+          "source": "1025Long context4 提示压缩2.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "预算控制器用于demonstration的压缩，从而粗颗粒度地控制budget",
+              "hit": false
+            },
+            {
+              "point": "按照perplexity进行排序，只保留perplexity高的demonstration",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 1515.3,
           "accuracy": 4,
+          "completeness": 3,
+          "relevance": 5,
+          "comment": "回答基本准确，但没有具体说明LLMLingua的Budget Controller的工作机制。"
+        },
+        {
+          "question": "什么是数据并行（Data Parallel），以及它在模型训练中的作用？",
+          "source": "0730分布式训练2——DDP.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "将同一个模型复制到多个GPU上，并执行不同的数据分片",
+              "hit": false
+            },
+            {
+              "point": "要求每张卡内都可以完整执行训练过程",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 1513.6,
+          "accuracy": 2,
+          "completeness": 1,
+          "relevance": 3,
+          "comment": "检索结果与问题关联性不强，且信息混乱，难以理解数据并行在模型训练中的作用。"
+        },
+        {
+          "question": "多设备加速比是如何定义的？影响因素有哪些？",
+          "source": "0730分布式训练2——DDP.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "指的是当使用多个计算设备并行处理时，相对于单设备计算速度的加速比例",
+              "hit": false
+            },
+            {
+              "point": "通信开销、负载不均衡等因素",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 1568.7,
+          "accuracy": 4,
+          "completeness": 3,
+          "relevance": 5,
+          "comment": "回答基本准确，但没有具体说明多设备加速比的定义及其影响因素。"
+        },
+        {
+          "question": "投机解码（Speculative Decoding）如何提升推理效率？",
+          "source": "投机解码Speculative Decoding.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "减少解码次数，从而减少通信次数",
+              "hit": false
+            },
+            {
+              "point": "保证生成质量的同时大幅提升了推理效率",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 2177.5,
+          "accuracy": 4,
+          "completeness": 3,
+          "relevance": 5,
+          "comment": "回答基本准确，但没有明确指出投机解码如何提升推理效率的具体方法和机制。"
+        },
+        {
+          "question": "什么是Routing在RAG中的作用？",
+          "source": "0528Rag for Scratch——langchain.md",
+          "points_found": 1,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "Routing是RAG pipeline的第二个阶段，目的是依据query的内容路由到正确的数据源。",
+              "hit": true
+            },
+            {
+              "point": "实际上就是一个分类任务。",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 1367.4,
+          "accuracy": 2,
+          "completeness": 1,
+          "relevance": 4,
+          "comment": "回答偏离了问题核心，主要讨论的是Routing在RAG中的作用，而不是逻辑路由选择正确的索引的方法。"
+        },
+        {
+          "question": "如何通过逻辑路由选择正确的索引？",
+          "source": "0528Rag for Scratch——langchain.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "使用function calling得到结构化的输出",
+              "hit": false
+            },
+            {
+              "point": "从多个索引中选择最相关的进行查询，例如：\n- 一个索引包含了所有与LangChain相关的Python文档。\n- 另一个",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 1361.4,
+          "accuracy": 3,
           "completeness": 2,
           "relevance": 5,
-          "comment": "回答覆盖了关键要点，但遗漏了跨请求KVCache共享的优点。"
+          "comment": "回答没有直接给出lora算法中h= Wor + AW的具体含义，而是提供了其他与问题无关的内容。"
         },
         {
-          "question": "PagedAttention如何管理KV缓存？",
-          "source": "Pageattention.md",
-          "points_found": 1,
+          "question": "lora 算法中的 h= Wor + AW 如何表示？",
+          "source": "0613 lora.md",
+          "points_found": 0,
           "total_points": 2,
-          "retrieve_ms": 675.4,
-          "accuracy": 5,
+          "point_details": [
+            {
+              "point": "h = Wor + AW",
+              "hit": false
+            },
+            {
+              "point": "- e W SRAFY | ERS,",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 1391.6,
+          "accuracy": 4,
           "completeness": 3,
-          "relevance": 4,
-          "comment": "回答完全基于检索资料且相关性高，但未提及PagedAttention的具体管理方式。"
+          "relevance": 5,
+          "comment": "回答基本准确，但没有明确解释d*d 2*r*d公式的具体含义和应用场景。"
         },
         {
-          "question": "PagedAttention的优点有哪些？",
-          "source": "Pageattention.md",
-          "points_found": 1,
-          "total_points": 2,
-          "retrieve_ms": 568.8,
-          "accuracy": 5,
-          "completeness": 3,
-          "relevance": 4,
-          "comment": "回答完全基于检索资料且相关性高，但未具体描述h表达式的计算过程。"
-        },
-        {
-          "question": "lora模型中的h表达式是什么？",
+          "question": "lora 中的 d*d 2*r*d 公式代表什么含义？",
           "source": "0613 lora.md",
           "points_found": 0,
           "total_points": 1,
-          "retrieve_ms": 543.6,
-          "accuracy": 2,
-          "completeness": 1,
-          "relevance": 5,
-          "comment": "回答与问题不直接相关，仅提供了Lora模型改进的相关信息。"
-        },
-        {
-          "question": "在生成自定义任务的数据集中，如何确保新指令的多样性？",
-          "source": "0605指令微调数据集.md",
-          "points_found": 2,
-          "total_points": 2,
-          "retrieve_ms": 657.1,
-          "accuracy": 1,
-          "completeness": 2,
-          "relevance": 3,
-          "comment": "回答与问题无关，未提及如何确保指令多样性。"
-        },
-        {
-          "question": "ROUGE-L衡量的是什么？其值范围是什么？",
-          "source": "0605指令微调数据集.md",
-          "points_found": 2,
-          "total_points": 2,
-          "retrieve_ms": 547.3,
-          "accuracy": 4,
-          "completeness": 5,
-          "relevance": 5,
-          "comment": "准确地解释了ROUGE-L的定义及其值范围，并且涵盖了所有要点。"
-        },
-        {
-          "question": "Hyper-Connections（HC）是如何工作的？",
-          "source": "重构残差连接：DeepSeek mHC 架构中的几何与数学原理.md",
-          "points_found": 2,
-          "total_points": 2,
-          "retrieve_ms": 554.3,
-          "accuracy": 2,
-          "completeness": 3,
-          "relevance": 4,
-          "comment": "回答与问题部分相关，但没有直接解释Hyper-Connections的工作原理。"
-        },
-        {
-          "question": "Routing在RAG pipeline中的作用是什么？",
-          "source": "0528Rag for Scratch——langchain.md",
-          "points_found": 1,
-          "total_points": 2,
-          "retrieve_ms": 540.2,
-          "accuracy": 1,
-          "completeness": 2,
-          "relevance": 3,
-          "comment": "回答与问题无关，未提及Routing在RAG pipeline中的作用。"
-        },
-        {
-          "question": "如何实现语义路由？",
-          "source": "0528Rag for Scratch——langchain.md",
-          "points_found": 0,
-          "total_points": 2,
-          "retrieve_ms": 555.6,
+          "point_details": [
+            {
+              "point": "d*d 2*r*d",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 1095.2,
           "accuracy": 3,
-          "completeness": 4,
-          "relevance": 5,
-          "comment": "回答部分相关，但主要讨论了XGBoost而非语义路由。"
-        },
-        {
-          "question": "LLMLingua 的预算控制器是如何工作的？其主要作用是什么？",
-          "source": "1025Long context4 提示压缩2.md",
-          "points_found": 2,
-          "total_points": 2,
-          "retrieve_ms": 683.7,
-          "accuracy": 4,
           "completeness": 2,
           "relevance": 5,
-          "comment": "回答基于检索资料，但未完全覆盖标准要点，特别是缺少对Budget Controller的主要作用的详细描述。"
+          "comment": "回答偏离了问题核心，主要讨论的是lora算法中的其他内容，而不是d*d 2*r*d公式的意义。"
         },
         {
-          "question": "LLMLingua 的迭代令牌级提示压缩（ITPC）算法是如何工作的？其主要特点是什么？",
-          "source": "1025Long context4 提示压缩2.md",
-          "points_found": 2,
-          "total_points": 2,
-          "retrieve_ms": 526.5,
-          "accuracy": 3,
-          "completeness": 3,
-          "relevance": 4,
-          "comment": "回答主要集中在ITPC算法的工作原理上，但没有提及其特点，完整性评分较低。"
-        },
-        {
-          "question": "PCW（Parallel context windows）是如何处理长文本问题的？其主要特点是什么？",
-          "source": "1016Long context3-上下文窗口分割 (1)(1).md",
-          "points_found": 1,
-          "total_points": 2,
-          "retrieve_ms": 590.7,
-          "accuracy": 5,
-          "completeness": 4,
-          "relevance": 5,
-          "comment": "准确地描述了PCW处理长文本问题的方法及其特点，但未完全覆盖所有标准要点。"
-        },
-        {
-          "question": "什么是短期记忆、长期记忆以及混合记忆？它们在智能体中的作用分别是什么？",
-          "source": "25-0121Memory-based agent.md",
-          "points_found": 0,
-          "total_points": 2,
-          "retrieve_ms": 585.0,
-          "accuracy": 2,
-          "completeness": 1,
-          "relevance": 3,
-          "comment": "回答与问题相关性较差，主要讨论的是混合Agent的概念而非短期记忆、长期记忆和混合记忆的具体定义及作用。"
-        },
-        {
-          "question": "量化指的是什么过程？",
-          "source": "0622Quantization.md",
-          "points_found": 0,
-          "total_points": 2,
-          "retrieve_ms": 584.0,
-          "accuracy": 4,
-          "completeness": 3,
-          "relevance": 5,
-          "comment": "准确地描述了量化的过程及其目标，但未完全覆盖所有标准要点，特别是缺少对IVF_SQ8的介绍。"
-        },
-        {
-          "question": "什么是MoE模型中的稀疏性？",
-          "source": "Engram.md",
-          "points_found": 1,
-          "total_points": 2,
-          "retrieve_ms": 731.6,
-          "accuracy": 2,
-          "completeness": 1,
-          "relevance": 3,
-          "comment": "回答没有直接解释什么是MoE模型中的稀疏性，而是讨论了MoE模型的架构和动机。"
-        },
-        {
-          "question": "Engram如何实现O(1)复杂度的哈希检索？",
-          "source": "Engram.md",
-          "points_found": 1,
-          "total_points": 2,
-          "retrieve_ms": 580.1,
-          "accuracy": 1,
-          "completeness": 2,
-          "relevance": 4,
-          "comment": "检索结果中提到了Engram实现O(1)复杂度哈希检索的方法，但没有具体解释如何实现。"
-        },
-        {
-          "question": "Monte Carlo 方法的核心思想是什么？",
-          "source": "0806强化学习3蒙特卡洛方法.md",
-          "points_found": 2,
-          "total_points": 2,
-          "retrieve_ms": 634.2,
-          "accuracy": 5,
-          "completeness": 5,
-          "relevance": 5,
-          "comment": "回答准确地描述了Monte Carlo方法的核心思想，并且完整覆盖了标准要点。"
-        },
-        {
-          "question": "在Monte Carlo 方法中，如何计算状态s下的累计回报v(s)？",
-          "source": "0806强化学习3蒙特卡洛方法.md",
-          "points_found": 1,
-          "total_points": 2,
-          "retrieve_ms": 662.2,
-          "accuracy": 5,
-          "completeness": 5,
-          "relevance": 5,
-          "comment": "回答准确地描述了如何计算状态s下的累计回报v(s)，并且完整覆盖了标准要点。"
-        },
-        {
-          "question": "SAPO解决了MoE模型中的哪些问题？",
-          "source": "SAPO.md",
-          "points_found": 1,
-          "total_points": 2,
-          "retrieve_ms": 669.9,
-          "accuracy": 4,
-          "completeness": 3,
-          "relevance": 4,
-          "comment": "回答主要讨论了SAPO在MoE模型中的应用，但没有直接回答SAPO解决了MoE模型中的哪些问题。"
-        },
-        {
-          "question": "记忆的来源有哪些？",
-          "source": "25-0127Memory-based agent2.md",
+          "question": "如何使用HuggingFace库进行大语言模型的调用？",
+          "source": "1111LangChain3 模型调用和输出解析.md",
           "points_found": 1,
           "total_points": 3,
-          "retrieve_ms": 680.7,
-          "accuracy": 1,
-          "completeness": 2,
-          "relevance": 1,
-          "comment": "回答完全偏离了问题主题，提供的信息与记忆的来源无关，且内容涉及机器学习和模型训练的相关知识。"
+          "point_details": [
+            {
+              "point": "首先导入分词器和预训练的模型",
+              "hit": true
+            },
+            {
+              "point": "将用户问题转成pytorch张量",
+              "hit": false
+            },
+            {
+              "point": "使用generate方法生成回复",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 1281.6,
+          "accuracy": 4,
+          "completeness": 3,
+          "relevance": 5,
+          "comment": "回答基本准确，但未完全覆盖标准要点中的所有内容，且部分内容与问题不相关。"
         },
         {
-          "question": "参数化形式的记忆存储方法主要分为哪两类？",
-          "source": "25-0127Memory-based agent2.md",
+          "question": "在进行大语言模型调用时，如何确保响应文本的正确性？",
+          "source": "1111LangChain3 模型调用和输出解析.md",
           "points_found": 0,
           "total_points": 2,
-          "retrieve_ms": 535.5,
+          "point_details": [
+            {
+              "point": "使用分词器的decode方法将生成的令牌解码成文本",
+              "hit": false
+            },
+            {
+              "point": "跳过任何特殊的令牌",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 1336.0,
+          "accuracy": 2,
+          "completeness": 1,
+          "relevance": 3,
+          "comment": "回答偏离了问题核心，主要讨论的是代码正确性而非大语言模型调用的响应文本正确性。"
+        },
+        {
+          "question": "什么是rag pipeline的第四阶段？",
+          "source": "0530Rag for Scratch——langchain.md",
+          "points_found": 2,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "indexing是rag pipeline的第四阶段",
+              "hit": true
+            },
+            {
+              "point": "就是将文档压缩为数值表示，以建立索引，便于后续的检索和生成",
+              "hit": true
+            }
+          ],
+          "retrieve_ms": 1314.9,
+          "accuracy": 5,
+          "completeness": 5,
+          "relevance": 5,
+          "comment": "准确地回答了rag pipeline第四阶段的问题，并且完全覆盖了标准要点，内容也非常相关。"
+        }
+      ]
+    },
+    {
+      "config": "+hyde",
+      "total_queries": 13,
+      "avg_points_coverage": 0.423,
+      "avg_accuracy": 2.85,
+      "avg_completeness": 2.15,
+      "avg_relevance": 4.08,
+      "avg_retrieve_ms": 8283.7,
+      "avg_generate_ms": 8354.2,
+      "details": [
+        {
+          "question": "为什么在缺少few-shot样本的情况下，CoD方法的表现会大幅下降？",
+          "source": "Chain of Draft.md",
+          "points_found": 1,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "训练数据中缺乏CoD风格的推理样本。",
+              "hit": false
+            },
+            {
+              "point": "小模型表达能力较弱，难以兼顾简洁和信息完整。",
+              "hit": true
+            }
+          ],
+          "retrieve_ms": 4325.5,
+          "accuracy": 4,
+          "completeness": 3,
+          "relevance": 5,
+          "comment": "回答基本基于检索资料，但缺少具体细节。例如，没有明确指出CoD方法在缺少few-shot样本时的表现下降的具体原因。"
+        },
+        {
+          "question": "如何计算指令微调的损失函数？",
+          "source": "0601指令微调.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "loss = r(A) - r(B) + r(A) - r(C) + r(A) - r(D) + r(B) - r(C)",
+              "hit": false
+            },
+            {
+              "point": "loss = -loss",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 6018.9,
+          "accuracy": 2,
+          "completeness": 1,
+          "relevance": 4,
+          "comment": "回答与问题相关，但内容不准确且缺乏关键信息。例如，损失函数的定义不正确，没有解释如何计算指令微调的损失。"
+        },
+        {
+          "question": "LLMLingua的Budget Controller如何工作？",
+          "source": "1025Long context4 提示压缩2.md",
+          "points_found": 1,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "预算控制器用于demonstration的压缩，从而粗颗粒度地控制budget",
+              "hit": false
+            },
+            {
+              "point": "按照perplexity进行排序，只保留perplexity高的demonstration",
+              "hit": true
+            }
+          ],
+          "retrieve_ms": 4308.7,
+          "accuracy": 3,
+          "completeness": 3,
+          "relevance": 5,
+          "comment": "回答基本基于检索资料，但缺少具体细节。例如，没有详细说明预算控制器的工作原理和具体步骤。"
+        },
+        {
+          "question": "什么是数据并行（Data Parallel），以及它在模型训练中的作用？",
+          "source": "0730分布式训练2——DDP.md",
+          "points_found": 2,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "将同一个模型复制到多个GPU上，并执行不同的数据分片",
+              "hit": true
+            },
+            {
+              "point": "要求每张卡内都可以完整执行训练过程",
+              "hit": true
+            }
+          ],
+          "retrieve_ms": 19413.5,
+          "accuracy": 2,
+          "completeness": 1,
+          "relevance": 4,
+          "comment": "回答与问题相关，但内容不准确且缺乏关键信息。例如，没有明确解释数据并行的定义及其在模型训练中的作用。"
+        },
+        {
+          "question": "多设备加速比是如何定义的？影响因素有哪些？",
+          "source": "0730分布式训练2——DDP.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "指的是当使用多个计算设备并行处理时，相对于单设备计算速度的加速比例",
+              "hit": false
+            },
+            {
+              "point": "通信开销、负载不均衡等因素",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 5467.5,
+          "accuracy": 2,
+          "completeness": 1,
+          "relevance": 4,
+          "comment": "回答与问题相关，但内容不准确且缺乏关键信息。例如，没有明确解释多设备加速比的定义及其影响因素。"
+        },
+        {
+          "question": "投机解码（Speculative Decoding）如何提升推理效率？",
+          "source": "投机解码Speculative Decoding.md",
+          "points_found": 1,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "减少解码次数，从而减少通信次数",
+              "hit": true
+            },
+            {
+              "point": "保证生成质量的同时大幅提升了推理效率",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 2546.3,
+          "accuracy": 4,
+          "completeness": 3,
+          "relevance": 5,
+          "comment": "回答基本准确地解释了投机解码的概念和加速效果的影响因素，但没有直接覆盖减少通信次数的标准要点。"
+        },
+        {
+          "question": "什么是Routing在RAG中的作用？",
+          "source": "0528Rag for Scratch——langchain.md",
+          "points_found": 2,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "Routing是RAG pipeline的第二个阶段，目的是依据query的内容路由到正确的数据源。",
+              "hit": true
+            },
+            {
+              "point": "实际上就是一个分类任务。",
+              "hit": true
+            }
+          ],
+          "retrieve_ms": 4817.2,
+          "accuracy": 2,
+          "completeness": 1,
+          "relevance": 4,
+          "comment": "检索结果与问题相关，但未能全面回答Routing在RAG中的作用，仅提到了分类任务的部分内容。"
+        },
+        {
+          "question": "如何通过逻辑路由选择正确的索引？",
+          "source": "0528Rag for Scratch——langchain.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "使用function calling得到结构化的输出",
+              "hit": false
+            },
+            {
+              "point": "从多个索引中选择最相关的进行查询，例如：\n- 一个索引包含了所有与LangChain相关的Python文档。\n- 另一个",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 5535.8,
+          "accuracy": 3,
+          "completeness": 2,
+          "relevance": 3,
+          "comment": "答案部分偏离了主题，没有解释如何通过逻辑路由选择正确的索引，而是讨论了向量索引技术的总结和建议。"
+        },
+        {
+          "question": "lora 算法中的 h= Wor + AW 如何表示？",
+          "source": "0613 lora.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "h = Wor + AW",
+              "hit": false
+            },
+            {
+              "point": "- e W SRAFY | ERS,",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 4779.5,
           "accuracy": 1,
           "completeness": 1,
-          "relevance": 1,
-          "comment": "回答完全偏离了问题主题，提供的信息与参数化形式的记忆存储方法无关，且内容涉及Agent相关的方法和技术。"
+          "relevance": 2,
+          "comment": "检索结果与问题相关性差，未能准确回答LORA算法中的h= Wor + AW公式代表的意义。"
+        },
+        {
+          "question": "lora 中的 d*d 2*r*d 公式代表什么含义？",
+          "source": "0613 lora.md",
+          "points_found": 0,
+          "total_points": 1,
+          "point_details": [
+            {
+              "point": "d*d 2*r*d",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 4682.7,
+          "accuracy": 3,
+          "completeness": 3,
+          "relevance": 4,
+          "comment": "虽然没有直接解释d*d 2*r*d公式的含义，但提供了Flash attention的相关背景信息，与问题相关。"
+        },
+        {
+          "question": "如何使用HuggingFace库进行大语言模型的调用？",
+          "source": "1111LangChain3 模型调用和输出解析.md",
+          "points_found": 3,
+          "total_points": 3,
+          "point_details": [
+            {
+              "point": "首先导入分词器和预训练的模型",
+              "hit": true
+            },
+            {
+              "point": "将用户问题转成pytorch张量",
+              "hit": true
+            },
+            {
+              "point": "使用generate方法生成回复",
+              "hit": true
+            }
+          ],
+          "retrieve_ms": 22693.6,
+          "accuracy": 4,
+          "completeness": 3,
+          "relevance": 5,
+          "comment": "回答主要基于HuggingFace库的调用方法，但没有直接回答如何确保响应文本的正确性，且部分内容与问题无关。"
+        },
+        {
+          "question": "在进行大语言模型调用时，如何确保响应文本的正确性？",
+          "source": "1111LangChain3 模型调用和输出解析.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "使用分词器的decode方法将生成的令牌解码成文本",
+              "hit": false
+            },
+            {
+              "point": "跳过任何特殊的令牌",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 14090.8,
+          "accuracy": 2,
+          "completeness": 1,
+          "relevance": 3,
+          "comment": "检索结果主要讨论了GraphRAG和DAPO的相关内容，并未直接回答如何确保响应文本的正确性，且部分内容与问题无关。"
+        },
+        {
+          "question": "什么是rag pipeline的第四阶段？",
+          "source": "0530Rag for Scratch——langchain.md",
+          "points_found": 2,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "indexing是rag pipeline的第四阶段",
+              "hit": true
+            },
+            {
+              "point": "就是将文档压缩为数值表示，以建立索引，便于后续的检索和生成",
+              "hit": true
+            }
+          ],
+          "retrieve_ms": 9008.1,
+          "accuracy": 5,
+          "completeness": 5,
+          "relevance": 5,
+          "comment": "回答准确地指出了rag pipeline第四阶段是indexing，并详细解释了其含义和作用，完全覆盖了标准要点且与问题高度相关。"
+        }
+      ]
+    },
+    {
+      "config": "+hyde_window",
+      "total_queries": 13,
+      "avg_points_coverage": 0.423,
+      "avg_accuracy": 3.38,
+      "avg_completeness": 2.31,
+      "avg_relevance": 4.23,
+      "avg_retrieve_ms": 13095.4,
+      "avg_generate_ms": 9529.5,
+      "details": [
+        {
+          "question": "为什么在缺少few-shot样本的情况下，CoD方法的表现会大幅下降？",
+          "source": "Chain of Draft.md",
+          "points_found": 1,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "训练数据中缺乏CoD风格的推理样本。",
+              "hit": false
+            },
+            {
+              "point": "小模型表达能力较弱，难以兼顾简洁和信息完整。",
+              "hit": true
+            }
+          ],
+          "retrieve_ms": 17460.2,
+          "accuracy": 4,
+          "completeness": 3,
+          "relevance": 5,
+          "comment": "回答基本基于检索资料，但未完全覆盖标准要点，且部分信息冗余。"
+        },
+        {
+          "question": "如何计算指令微调的损失函数？",
+          "source": "0601指令微调.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "loss = r(A) - r(B) + r(A) - r(C) + r(A) - r(D) + r(B) - r(C)",
+              "hit": false
+            },
+            {
+              "point": "loss = -loss",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 7824.4,
+          "accuracy": 2,
+          "completeness": 1,
+          "relevance": 3,
+          "comment": "检索结果与问题无关，未能准确回答如何计算指令微调的损失函数。"
+        },
+        {
+          "question": "LLMLingua的Budget Controller如何工作？",
+          "source": "1025Long context4 提示压缩2.md",
+          "points_found": 1,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "预算控制器用于demonstration的压缩，从而粗颗粒度地控制budget",
+              "hit": false
+            },
+            {
+              "point": "按照perplexity进行排序，只保留perplexity高的demonstration",
+              "hit": true
+            }
+          ],
+          "retrieve_ms": 11428.4,
+          "accuracy": 4,
+          "completeness": 4,
+          "relevance": 5,
+          "comment": "回答基于检索资料且覆盖了标准要点，但部分信息冗余。"
+        },
+        {
+          "question": "什么是数据并行（Data Parallel），以及它在模型训练中的作用？",
+          "source": "0730分布式训练2——DDP.md",
+          "points_found": 2,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "将同一个模型复制到多个GPU上，并执行不同的数据分片",
+              "hit": true
+            },
+            {
+              "point": "要求每张卡内都可以完整执行训练过程",
+              "hit": true
+            }
+          ],
+          "retrieve_ms": 20217.4,
+          "accuracy": 3,
+          "completeness": 2,
+          "relevance": 4,
+          "comment": "检索结果与问题不相关，未能准确解释数据并行的概念及其作用。"
+        },
+        {
+          "question": "多设备加速比是如何定义的？影响因素有哪些？",
+          "source": "0730分布式训练2——DDP.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "指的是当使用多个计算设备并行处理时，相对于单设备计算速度的加速比例",
+              "hit": false
+            },
+            {
+              "point": "通信开销、负载不均衡等因素",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 14813.1,
+          "accuracy": 1,
+          "completeness": 1,
+          "relevance": 2,
+          "comment": "检索结果与问题无关，未能正确回答多设备加速比的定义及影响因素。"
+        },
+        {
+          "question": "投机解码（Speculative Decoding）如何提升推理效率？",
+          "source": "投机解码Speculative Decoding.md",
+          "points_found": 1,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "减少解码次数，从而减少通信次数",
+              "hit": true
+            },
+            {
+              "point": "保证生成质量的同时大幅提升了推理效率",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 12228.8,
+          "accuracy": 4,
+          "completeness": 3,
+          "relevance": 5,
+          "comment": "回答基本准确，但未完全覆盖标准要点，且部分信息与问题关联不大。"
+        },
+        {
+          "question": "什么是Routing在RAG中的作用？",
+          "source": "0528Rag for Scratch——langchain.md",
+          "points_found": 2,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "Routing是RAG pipeline的第二个阶段，目的是依据query的内容路由到正确的数据源。",
+              "hit": true
+            },
+            {
+              "point": "实际上就是一个分类任务。",
+              "hit": true
+            }
+          ],
+          "retrieve_ms": 12862.8,
+          "accuracy": 4,
+          "completeness": 2,
+          "relevance": 5,
+          "comment": "回答不够完整，仅提及了Routing的作用，但没有解释其在RAG中的具体作用和机制。"
+        },
+        {
+          "question": "如何通过逻辑路由选择正确的索引？",
+          "source": "0528Rag for Scratch——langchain.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "使用function calling得到结构化的输出",
+              "hit": false
+            },
+            {
+              "point": "从多个索引中选择最相关的进行查询，例如：\n- 一个索引包含了所有与LangChain相关的Python文档。\n- 另一个",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 9487.5,
+          "accuracy": 3,
+          "completeness": 1,
+          "relevance": 4,
+          "comment": "检索到的信息与问题相关，但未能准确理解d*d 2*r*d的具体含义，且未覆盖标准要点。"
+        },
+        {
+          "question": "lora 算法中的 h= Wor + AW 如何表示？",
+          "source": "0613 lora.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "h = Wor + AW",
+              "hit": false
+            },
+            {
+              "point": "- e W SRAFY | ERS,",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 14173.1,
+          "accuracy": 5,
+          "completeness": 3,
+          "relevance": 5,
+          "comment": "回答较为准确，但没有完全覆盖标准要点中的具体公式解释。"
+        },
+        {
+          "question": "lora 中的 d*d 2*r*d 公式代表什么含义？",
+          "source": "0613 lora.md",
+          "points_found": 0,
+          "total_points": 1,
+          "point_details": [
+            {
+              "point": "d*d 2*r*d",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 17393.2,
+          "accuracy": 4,
+          "completeness": 2,
+          "relevance": 5,
+          "comment": "检索到的信息与问题相关，但未能准确理解d*d 2*r*d的具体含义，且未完全覆盖标准要点。"
+        },
+        {
+          "question": "如何使用HuggingFace库进行大语言模型的调用？",
+          "source": "1111LangChain3 模型调用和输出解析.md",
+          "points_found": 3,
+          "total_points": 3,
+          "point_details": [
+            {
+              "point": "首先导入分词器和预训练的模型",
+              "hit": true
+            },
+            {
+              "point": "将用户问题转成pytorch张量",
+              "hit": true
+            },
+            {
+              "point": "使用generate方法生成回复",
+              "hit": true
+            }
+          ],
+          "retrieve_ms": 18346.9,
+          "accuracy": 3,
+          "completeness": 2,
+          "relevance": 4,
+          "comment": "回答主要集中在如何调用HuggingFace库进行大语言模型的调用，但没有直接回答如何确保响应文本的正确性。此外，提供的代码示例与问题不完全相关。"
+        },
+        {
+          "question": "在进行大语言模型调用时，如何确保响应文本的正确性？",
+          "source": "1111LangChain3 模型调用和输出解析.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "使用分词器的decode方法将生成的令牌解码成文本",
+              "hit": false
+            },
+            {
+              "point": "跳过任何特殊的令牌",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 9574.8,
+          "accuracy": 2,
+          "completeness": 1,
+          "relevance": 3,
+          "comment": "检索到的内容主要讨论了DAPO和DPO算法在提升模型性能方面的应用，但没有直接回答如何确保响应文本的正确性。"
+        },
+        {
+          "question": "什么是rag pipeline的第四阶段？",
+          "source": "0530Rag for Scratch——langchain.md",
+          "points_found": 2,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "indexing是rag pipeline的第四阶段",
+              "hit": true
+            },
+            {
+              "point": "就是将文档压缩为数值表示，以建立索引，便于后续的检索和生成",
+              "hit": true
+            }
+          ],
+          "retrieve_ms": 4429.1,
+          "accuracy": 5,
+          "completeness": 5,
+          "relevance": 5,
+          "comment": "回答准确地指出了rag pipeline的第四阶段是indexing，并且详细解释了其过程和相关概念，完全符合问题要求。"
+        }
+      ]
+    },
+    {
+      "config": "+hyde_window_denoise",
+      "total_queries": 13,
+      "avg_points_coverage": 0.141,
+      "avg_accuracy": 3.31,
+      "avg_completeness": 2.31,
+      "avg_relevance": 4.46,
+      "avg_retrieve_ms": 6434.9,
+      "avg_generate_ms": 8215.1,
+      "details": [
+        {
+          "question": "为什么在缺少few-shot样本的情况下，CoD方法的表现会大幅下降？",
+          "source": "Chain of Draft.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "训练数据中缺乏CoD风格的推理样本。",
+              "hit": false
+            },
+            {
+              "point": "小模型表达能力较弱，难以兼顾简洁和信息完整。",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 6365.8,
+          "accuracy": 4,
+          "completeness": 3,
+          "relevance": 5,
+          "comment": "回答基本准确，但缺少了CoD方法具体如何在缺少few-shot样本的情况下表现下降的关键细节。"
+        },
+        {
+          "question": "如何计算指令微调的损失函数？",
+          "source": "0601指令微调.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "loss = r(A) - r(B) + r(A) - r(C) + r(A) - r(D) + r(B) - r(C)",
+              "hit": false
+            },
+            {
+              "point": "loss = -loss",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 7521.7,
+          "accuracy": 2,
+          "completeness": 1,
+          "relevance": 4,
+          "comment": "检索结果与问题关联度较高，但未能清晰表述损失函数的具体计算方式。"
+        },
+        {
+          "question": "LLMLingua的Budget Controller如何工作？",
+          "source": "1025Long context4 提示压缩2.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "预算控制器用于demonstration的压缩，从而粗颗粒度地控制budget",
+              "hit": false
+            },
+            {
+              "point": "按照perplexity进行排序，只保留perplexity高的demonstration",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 5605.8,
+          "accuracy": 3,
+          "completeness": 2,
+          "relevance": 5,
+          "comment": "回答较为相关，但对Budget Controller的工作机制描述不够详细。"
+        },
+        {
+          "question": "什么是数据并行（Data Parallel），以及它在模型训练中的作用？",
+          "source": "0730分布式训练2——DDP.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "将同一个模型复制到多个GPU上，并执行不同的数据分片",
+              "hit": false
+            },
+            {
+              "point": "要求每张卡内都可以完整执行训练过程",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 8123.4,
+          "accuracy": 4,
+          "completeness": 3,
+          "relevance": 5,
+          "comment": "回答基本准确且相关，但缺少了数据并行在模型训练中的具体作用细节。"
+        },
+        {
+          "question": "多设备加速比是如何定义的？影响因素有哪些？",
+          "source": "0730分布式训练2——DDP.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "指的是当使用多个计算设备并行处理时，相对于单设备计算速度的加速比例",
+              "hit": false
+            },
+            {
+              "point": "通信开销、负载不均衡等因素",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 8715.7,
+          "accuracy": 3,
+          "completeness": 2,
+          "relevance": 4,
+          "comment": "检索结果与问题关联度较高，但未能清晰表述多设备加速比的具体定义及其影响因素。"
+        },
+        {
+          "question": "投机解码（Speculative Decoding）如何提升推理效率？",
+          "source": "投机解码Speculative Decoding.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "减少解码次数，从而减少通信次数",
+              "hit": false
+            },
+            {
+              "point": "保证生成质量的同时大幅提升了推理效率",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 3770.1,
+          "accuracy": 3,
+          "completeness": 2,
+          "relevance": 4,
+          "comment": "回答中出现了重复内容，并且没有具体解释投机解码如何提升推理效率，仅提及了其灵活性和加速decode的背景信息。"
+        },
+        {
+          "question": "什么是Routing在RAG中的作用？",
+          "source": "0528Rag for Scratch——langchain.md",
+          "points_found": 1,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "Routing是RAG pipeline的第二个阶段，目的是依据query的内容路由到正确的数据源。",
+              "hit": true
+            },
+            {
+              "point": "实际上就是一个分类任务。",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 5185.2,
+          "accuracy": 4,
+          "completeness": 3,
+          "relevance": 5,
+          "comment": "回答较为准确地描述了Routing在RAG中的作用，但缺少具体的例子来说明如何选择正确的索引。"
+        },
+        {
+          "question": "如何通过逻辑路由选择正确的索引？",
+          "source": "0528Rag for Scratch——langchain.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "使用function calling得到结构化的输出",
+              "hit": false
+            },
+            {
+              "point": "从多个索引中选择最相关的进行查询，例如：\n- 一个索引包含了所有与LangChain相关的Python文档。\n- 另一个",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 7804.2,
+          "accuracy": 2,
+          "completeness": 1,
+          "relevance": 3,
+          "comment": "检索结果与问题关联性不强，没有具体解释如何通过逻辑路由选择正确的索引。"
+        },
+        {
+          "question": "lora 算法中的 h= Wor + AW 如何表示？",
+          "source": "0613 lora.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "h = Wor + AW",
+              "hit": false
+            },
+            {
+              "point": "- e W SRAFY | ERS,",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 2694.8,
+          "accuracy": 4,
+          "completeness": 2,
+          "relevance": 5,
+          "comment": "回答准确地表示了lora算法中的h = Wor + AW公式，但缺少对d*d 2*r*d公式的具体解释。"
+        },
+        {
+          "question": "lora 中的 d*d 2*r*d 公式代表什么含义？",
+          "source": "0613 lora.md",
+          "points_found": 0,
+          "total_points": 1,
+          "point_details": [
+            {
+              "point": "d*d 2*r*d",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 4873.3,
+          "accuracy": 3,
+          "completeness": 2,
+          "relevance": 4,
+          "comment": "检索结果与问题关联性不强，没有具体解释d*d 2*r*d公式的含义。"
+        },
+        {
+          "question": "如何使用HuggingFace库进行大语言模型的调用？",
+          "source": "1111LangChain3 模型调用和输出解析.md",
+          "points_found": 1,
+          "total_points": 3,
+          "point_details": [
+            {
+              "point": "首先导入分词器和预训练的模型",
+              "hit": true
+            },
+            {
+              "point": "将用户问题转成pytorch张量",
+              "hit": false
+            },
+            {
+              "point": "使用generate方法生成回复",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 13420.9,
+          "accuracy": 4,
+          "completeness": 3,
+          "relevance": 5,
+          "comment": "回答基本准确地指出了RAG pipeline第四阶段是索引文档，但缺少具体步骤和细节解释。"
+        },
+        {
+          "question": "在进行大语言模型调用时，如何确保响应文本的正确性？",
+          "source": "1111LangChain3 模型调用和输出解析.md",
+          "points_found": 0,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "使用分词器的decode方法将生成的令牌解码成文本",
+              "hit": false
+            },
+            {
+              "point": "跳过任何特殊的令牌",
+              "hit": false
+            }
+          ],
+          "retrieve_ms": 5179.1,
+          "accuracy": 2,
+          "completeness": 1,
+          "relevance": 4,
+          "comment": "回答偏离了问题核心，提到了HuggingFace库的调用方式，与问题无关。"
+        },
+        {
+          "question": "什么是rag pipeline的第四阶段？",
+          "source": "0530Rag for Scratch——langchain.md",
+          "points_found": 2,
+          "total_points": 2,
+          "point_details": [
+            {
+              "point": "indexing是rag pipeline的第四阶段",
+              "hit": true
+            },
+            {
+              "point": "就是将文档压缩为数值表示，以建立索引，便于后续的检索和生成",
+              "hit": true
+            }
+          ],
+          "retrieve_ms": 4394.2,
+          "accuracy": 5,
+          "completeness": 5,
+          "relevance": 5,
+          "comment": "准确地指出了RAG pipeline第四阶段是索引文档，并且内容完整且相关。"
         }
       ]
     }
   ],
   "summary": {
-    "baseline_coverage": 0.295,
-    "best_coverage": 0.561,
-    "best_config": "+sentence_window"
+    "baseline_coverage": 0.231,
+    "best_coverage": 0.423,
+    "best_config": "hybrid_rerank"
   }
 }

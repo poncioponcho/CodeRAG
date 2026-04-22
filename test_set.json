@@ -1,292 +1,257 @@
 [
   {
-    "source": "Qwen3-VL技术报告解读.md",
-    "question": "Qwen3-VL在架构方面做了哪些改进？",
+    "source": "Chain of Draft.md",
+    "question": "CoD方法相比于CoT和Standard方法有什么优势？",
     "answer_points": [
-      "交错-MRoPE",
-      "DeepStack",
-      "基于文本的时间对齐机制"
+      "CoD方法在保证准确率的同时显著降低了生成的token量。",
+      "使用few-shot提示可以进一步提升CoD方法的效果，特别是在小模型上。"
     ]
   },
   {
-    "source": "Qwen3-VL技术报告解读.md",
-    "question": "Qwen3-VL的训练流程分为哪几个阶段？",
+    "source": "Chain of Draft.md",
+    "question": "为什么在缺少few-shot样本的情况下，CoD方法的表现会大幅下降？",
     "answer_points": [
-      "预训练：四阶段（视觉语言对齐→全参数多模态训练→长上下文适应→超长上下文优化）",
-      "后训练：三阶段（监督微调→知识蒸馏→强化学习）"
+      "训练数据中缺乏CoD风格的推理样本。",
+      "小模型表达能力较弱，难以兼顾简洁和信息完整。"
     ]
   },
   {
-    "source": "GFPO.md",
-    "question": "为什么大模型会在训练过程中变成话唠？",
+    "source": "0601指令微调.md",
+    "question": "如何计算指令微调的损失函数？",
     "answer_points": [
-      "基于奖励验证的强化学习算法（GRPO、PPO等），倾向于给答案正确且推理步骤更长的回答更高的奖励。",
-      "随着训练的进行，模型就倾向于用更长的回复来换取更高的奖励，即便回复中的大多数token对推理没有贡献。"
+      "loss = r(A) - r(B) + r(A) - r(C) + r(A) - r(D) + r(B) - r(C) + ... + r(C) - r(D)",
+      "loss = -loss"
     ]
   },
   {
-    "source": "GFPO.md",
-    "question": "GFPO是如何实现计算资源在训练和推理阶段的平衡的？",
+    "source": "0601指令微调.md",
+    "question": "在指令微调中，损失函数是如何被优化的？",
     "answer_points": [
-      "GFPO通过在训练阶段引入过滤机制，每个问题采样更大的响应组，并保留top-k的推理链。",
-      "根据问题难度动态调整保留响应数量，为更难的问题分配更多计算资源。"
+      "通过将损失函数中的正负项相加，最终得到一个新的损失值，这个新的损失值是原始损失值的相反数。",
+      "优化过程可以通过调整模型参数来减少损失函数的绝对值。"
     ]
   },
   {
-    "source": "Pageattention.md",
-    "question": "PagedAttention如何管理KV缓存？",
+    "source": "Qwen3VL核心技术解析.md",
+    "question": "Qwen3-VL在时间建模上做了哪些改进？",
     "answer_points": [
-      "通过集中式调度器发送指令来管理GPU工作器上的物理KV缓存内存",
-      "在非连续的内存空间中存储连续的键和值"
+      "交错-MRoPE，将时间、高度、宽度三个维度均匀分布在低频和高频带中。",
+      "通过基于文本的时间戳对齐机制实现更精确的时空定位。"
     ]
   },
   {
-    "source": "Pageattention.md",
-    "question": "PagedAttention的优点有哪些？",
+    "source": "Qwen3VL核心技术解析.md",
+    "question": "Qwen3-VL中的DeepStack机制是如何工作的？",
     "answer_points": [
-      "按需分配，不提前预分配",
-      "跨请求KVCache共享"
-    ]
-  },
-  {
-    "source": "25-0421Agentic RAG.md",
-    "question": "Naive RAG的主要缺点是什么？",
-    "answer_points": [
-      "缺乏上下文意识：由于依赖词汇匹配而非语义理解，检索到的文档往往无法捕捉查询的语义细微差别。",
-      "输出碎片化：缺乏数据预处理或上下文整合，往往导致回答不连贯或过于通用。"
-    ]
-  },
-  {
-    "source": "25-0421Agentic RAG.md",
-    "question": "Modular RAG的关键创新是什么？",
-    "answer_points": [
-      "混合检索策略：将稀疏检索方法（例如 稀疏编码器-BM25）与密集检索技术（例如 DPR - Dense Passage Retrieval）相结合，准确性更高。",
-      "强调灵活性和定制性，像“搭积木”一样组装AI能力。将检索和生成流程分解为独立、可重用的组件，从而实现领域特定的优化和任务适应性。"
-    ]
-  },
-  {
-    "source": "0613 lora.md",
-    "question": "lora模型中的h表达式是什么？",
-    "answer_points": [
-      "h= Wor + AW = Wor+ BAz"
-    ]
-  },
-  {
-    "source": "0613 lora.md",
-    "question": "动量参数m在MOCO模型中有什么作用？",
-    "answer_points": [
-      "目的就是不让当前时刻的输出完全依赖于当前时刻的输入",
-      "因此当m很大时,就会改变得很缓慢；当m很小时,就比较依赖于"
+      "ViT的不同层通过残差连接路由至对应的LLM层，保留从低级到高级的丰富视觉信息。",
+      "增强多层级融合，强化视觉-语言对齐。"
     ]
   },
   {
     "source": "0605指令微调数据集.md",
-    "question": "在生成自定义任务的数据集中，如何确保新指令的多样性？",
+    "question": "如何确保生成的数据具有多样性？",
     "answer_points": [
-      "只有当一条新指令与任何现有指令的ROUGE-L重叠度小于0.7时，才会被添加到任务池中。",
-      "排除了包含一些特定关键词（如图像、图片、图表）的指令，这些关键词通常不能被语言模型处理。"
+      "通过过滤掉与现有指令重叠度大于0.7的新指令。",
+      "排除包含特定关键词的指令。"
     ]
   },
   {
     "source": "0605指令微调数据集.md",
-    "question": "ROUGE-L衡量的是什么？其值范围是什么？",
+    "question": "ROUGE-L指标用于衡量生成文本和参考文本之间的相似性，请解释其计算方式。",
     "answer_points": [
-      "ROUGE-L 衡量模型生成文本与参考文本之间最长公共子序列（Longest Common Subsequence）的匹配程度。",
-      "最大值为 100。"
+      "ROUGE-L衡量模型生成文本与参考文本之间最长公共子序列的匹配程度。",
+      "值越高表示生成的文本与参考文本越相似，最大值为100。"
     ]
   },
   {
-    "source": "0827如何写出优雅的Prompt.md",
-    "question": "什么是prompt在大模型中的作用？",
+    "source": "1203向量索引.md",
+    "question": "IVF_FLAT 索引类型的核心原理是什么？",
     "answer_points": [
-      "prompt是输入给生成AI模型的数据，用于引导其输出",
-      "良好的prompt可以解决模型可能存在的幻觉问题和bad case"
+      "通过聚类算法（如k-means）将高维空间中的向量划分为多个子空间（簇），每个簇包含一组相似的向量，并且每个簇会有一个代表向量，通常是簇的中心点；为每个簇创建倒排索引，这样在查询时，系统只需关注与查询向量相似的簇，而不需要搜索整个高维空间，从而显著降低搜索的时间复杂度；查询时，IVF_FLAT首先将查询向量分配到距离最近的簇中心（即子空间），然后在该簇内执行精确的线性搜索，查找与查询向量相似的向量。"
     ]
   },
   {
-    "source": "0827如何写出优雅的Prompt.md",
-    "question": "大模型数据处理的第4个level是什么？",
+    "source": "1203向量索引.md",
+    "question": "nprobe 参数的作用是什么？",
     "answer_points": [
-      "利用用户的交互日志来驱动数据构造过程，收集用户的真实prompt",
-      "用规则或者LLM去分析用户的feedback，进而获得高质量的answer数据"
+      "nprobe 控制搜索时考虑的簇的数量，从而平衡查询精度和查询速度；增大 nprobe 的值可以提高查询精度但会增加查询时间。"
     ]
   },
   {
-    "source": "重构残差连接：DeepSeek mHC 架构中的几何与数学原理.md",
-    "question": "为什么大模型需要重构残差连接？",
+    "source": "1010Long context2- 插值(1).md",
+    "question": "什么是位置插值（Position Interpolation），以及它与线性内插的区别？",
     "answer_points": [
-      "深度神经网络在传递信息过程中会逐渐衰减，导致深层网络难以训练",
-      "Residual Connection具有恒等映射特性，可以保证模型训练过程的稳定性"
+      "位置插值PI通过直接将位置索引缩小，对于RoPE等位置编码更合适，并且没有添加可训练参数。",
+      "与线性内插相比，位置插值仍保留了4096个位置索引，而线性内插只有2048个。"
     ]
   },
   {
-    "source": "重构残差连接：DeepSeek mHC 架构中的几何与数学原理.md",
-    "question": "Hyper-Connections（HC）是如何工作的？",
+    "source": "1010Long context2- 插值(1).md",
+    "question": "如何通过进制转换来解决位置索引的下采样问题？",
     "answer_points": [
-      "通过扩展残差流的宽度并增强连接的复杂性",
-      "不改变计算开销的前提下，显著提升了拓扑复杂性"
-    ]
-  },
-  {
-    "source": "0528Rag for Scratch——langchain.md",
-    "question": "Routing在RAG pipeline中的作用是什么？",
-    "answer_points": [
-      "依据query的内容路由到正确的数据源",
-      "实际上是一个分类任务"
-    ]
-  },
-  {
-    "source": "0528Rag for Scratch——langchain.md",
-    "question": "如何实现语义路由？",
-    "answer_points": [
-      "使用embeddings将query路由到最相关的prompt",
-      "特别有用的技术之一是通过语义相似度进行路由"
+      "可以通过进制转换，既不用新增维度也可以保持相邻间距。比如采用16进制取代10进制。",
+      "这种做法可以在不增加模型复杂度的前提下，改善位置编码的效果。"
     ]
   },
   {
     "source": "1025Long context4 提示压缩2.md",
-    "question": "LLMLingua 的预算控制器是如何工作的？其主要作用是什么？",
+    "question": "LLMLingua如何分配压缩比给提示的不同组成部分？",
     "answer_points": [
-      "用于demonstration的压缩，从而粗颗粒度地控制budget",
-      "过多冗余的demonstration会占据instruction和query的位置"
+      "LLMLingua采用预算控制器为原始提示的各个组成部分（例如指令、演示和问题）动态分配不同的压缩比",
+      "训练目标是最小化压缩前输出和压缩后输出分布之间的差距"
     ]
   },
   {
     "source": "1025Long context4 提示压缩2.md",
-    "question": "LLMLingua 的迭代令牌级提示压缩（ITPC）算法是如何工作的？其主要特点是什么？",
+    "question": "LLMLingua的Budget Controller如何工作？",
     "answer_points": [
-      "通过迭代处理提示中的每个片段并考虑当前上下文中每个标记的条件概率来评估每个标记的重要性",
-      "有助于更好地保留令牌之间的依赖关系"
+      "预算控制器用于demonstration的压缩，从而粗颗粒度地控制budget",
+      "按照perplexity进行排序，只保留perplexity高的demonstration"
     ]
   },
   {
-    "source": "1016Long context3-上下文窗口分割 (1)(1).md",
-    "question": "PCW（Parallel context windows）是如何处理长文本问题的？其主要特点是什么？",
+    "source": "0730分布式训练2——DDP.md",
+    "question": "什么是数据并行（Data Parallel），以及它在模型训练中的作用？",
     "answer_points": [
-      "通过将上下文分割成段，并采用滑动窗口方法来处理上下文",
-      "位置编码的长度大幅降低，降低了对位置编码外推性的需求"
+      "将同一个模型复制到多个GPU上，并执行不同的数据分片",
+      "要求每张卡内都可以完整执行训练过程"
     ]
   },
   {
-    "source": "1016Long context3-上下文窗口分割 (1)(1).md",
-    "question": "NBCE（Naive Bayes Conditional Estimation）方法是如何工作的？其主要优缺点是什么？",
+    "source": "0730分布式训练2——DDP.md",
+    "question": "多设备加速比是如何定义的？影响因素有哪些？",
     "answer_points": [
-      "基于独立假设的贝叶斯公式，即朴素贝叶斯来估计p(T|S1,S2,⋯,Sn)",
-      "Max Pooling配合β=0.25，用Greedy Search总体表现比较好，但Random Sample出来的结果基本不可读"
+      "指的是当使用多个计算设备并行处理时，相对于单设备计算速度的加速比例",
+      "通信开销、负载不均衡等因素"
     ]
   },
   {
-    "source": "25-0121Memory-based agent.md",
-    "question": "记忆增强规划策略的主要特点是什么？其具体实现方式有哪些？",
+    "source": "0728分布式训练1——数据并行.md",
+    "question": "什么是多设备加速比？它在实际使用中通常会受到哪些因素的影响？",
     "answer_points": [
-      "通过引入一个附加的记忆组件来提升规划能力，该组件中存储了各种宝贵信息",
-      "分为RAG记忆和嵌入式记忆"
+      "多设备加速比指的是当使用多个计算设备并行处理时，相对于单设备计算速度的加速比例。理想情况下，如果使用n个设备，理论上的加速比是n倍。但是，由于通信开销、负载不均衡等因素，实际的加速比往往低于理论值。",
+      "多设备加速比会受到通信效率的影响，随着计算设备数量的增加，理论上峰值计算速度会增加，但由于通信效率的影响，计算设备增多会导致加速比急速降低。"
     ]
   },
   {
-    "source": "25-0121Memory-based agent.md",
-    "question": "什么是短期记忆、长期记忆以及混合记忆？它们在智能体中的作用分别是什么？",
+    "source": "0728分布式训练1——数据并行.md",
+    "question": "在Pytorch框架中如何使用DataParallel进行模型训练？其主要优缺点是什么？",
     "answer_points": [
-      "短期记忆关注于当前情境的上下文信息，是短暂且有限的",
-      "长期记忆储存智能体的历史行为和思考，通过外部向量存储实现"
+      "在Pytorch框架中，可以通过`model = torch.nn.DataParallel(model)`来实现模型的多卡训练。",
+      "优点是可以方便地利用多张显卡提高训练速度；缺点是增加了额外的通信开销，且需要考虑负载均衡等问题。"
     ]
   },
   {
-    "source": "0622Quantization.md",
-    "question": "量化指的是什么过程？",
+    "source": "投机解码Speculative Decoding.md",
+    "question": "为什么传统的自回归解码方法存在算力利用率不高的问题？",
     "answer_points": [
-      "将连续的无限值映射到一组较小的离散有限值的过程",
-      "将模型的权重从高精度数据类型转换为低精度数据类型的过程"
+      "每次解码只生成一个token，推理延迟随生成序列长度和模型规模线性增长",
+      "显存带宽压力大"
     ]
   },
   {
-    "source": "0622Quantization.md",
-    "question": "量化的主要挑战是什么？",
+    "source": "投机解码Speculative Decoding.md",
+    "question": "投机解码（Speculative Decoding）如何提升推理效率？",
     "answer_points": [
-      "如何在减少表示精度的同时不让模型的准确度掉下来，即在压缩率与准确率损失间作trade-off"
+      "减少解码次数，从而减少通信次数",
+      "保证生成质量的同时大幅提升了推理效率"
     ]
   },
   {
-    "source": "Engram.md",
-    "question": "什么是MoE模型中的稀疏性？",
+    "source": "0528Rag for Scratch——langchain.md",
+    "question": "什么是Routing在RAG中的作用？",
     "answer_points": [
-      "MoE模型虽然参数量巨大，但处理每个任务时，只激活其中很少一部分参数。",
-      ""
+      "Routing是RAG pipeline的第二个阶段，目的是依据query的内容路由到正确的数据源。",
+      "实际上就是一个分类任务。"
     ]
   },
   {
-    "source": "Engram.md",
-    "question": "Engram如何实现O(1)复杂度的哈希检索？",
+    "source": "0528Rag for Scratch——langchain.md",
+    "question": "如何通过逻辑路由选择正确的索引？",
     "answer_points": [
-      "通过条件记忆作为补充的稀疏性维度，利用N-gram从嵌入知识表中查找静态知识。",
-      ""
+      "使用function calling得到结构化的输出",
+      "从多个索引中选择最相关的进行查询，例如：\n- 一个索引包含了所有与LangChain相关的Python文档。\n- 另一个索引包含了所有与LangChain相关的JavaScript文档。"
     ]
   },
   {
-    "source": "0806强化学习3蒙特卡洛方法.md",
-    "question": "Monte Carlo 方法的核心思想是什么？",
+    "source": "0613 lora.md",
+    "question": "lora 算法中的 h= Wor + AW 如何表示？",
     "answer_points": [
-      "用样本均值来近似期望",
-      "依据大数定理，对于随机变量X，给定N个iid采样样本x1, x2, ..., xn，则x̄是E(X)的无偏估计。"
+      "h = Wor + AW",
+      "- e W SRAFY | ERS,"
     ]
   },
   {
-    "source": "0806强化学习3蒙特卡洛方法.md",
-    "question": "在Monte Carlo 方法中，如何计算状态s下的累计回报v(s)？",
+    "source": "0613 lora.md",
+    "question": "lora 中的 d*d 2*r*d 公式代表什么含义？",
     "answer_points": [
-      "可以用样本均值估计期望",
-      "假设g1, g2, ..., gn是多个episode得到的n个s状态的累计回报，则v(s) = (g1 + g2 + ... + gn)/n 是E[G|S = t s]的无偏估计。"
+      "d*d 2*r*d"
     ]
   },
   {
-    "source": "SAPO.md",
-    "question": "SAPO解决了MoE模型中的哪些问题？",
+    "source": "0718XGBoost.md",
+    "question": "在XGBoost中是如何优化目标函数的？",
     "answer_points": [
-      "在MoE模型中，token级重要性比率高方差会导致训练不稳定性。",
-      "SAPO通过引入平滑的、温度控制的门控函数来连续地衰减偏离策略的更新，同时保留有用的学习信号。"
+      "通过泰勒级数展开来实现优化",
+      "使用二阶泰勒展开（包括一阶和二阶导数）"
     ]
   },
   {
-    "source": "SAPO.md",
-    "question": "SAPO与GSPO相比有哪些优势？",
+    "source": "0718XGBoost.md",
+    "question": "如何控制训练决策树时的树的复杂度？",
     "answer_points": [
-      "保持了序列级别连贯性，通过软门控构建了一个连续的信任区域。",
-      "引入了非对称温度设计，通过对负向token梯度施加更快的衰减。"
+      "通过调参的方式控制叶节点个数",
+      "调整树的深度",
+      "调整叶节点的值"
     ]
   },
   {
-    "source": "25-0127Memory-based agent2.md",
-    "question": "记忆的来源有哪些？",
+    "source": "1111LangChain3 模型调用和输出解析.md",
+    "question": "如何使用HuggingFace库进行大语言模型的调用？",
     "answer_points": [
-      "同一个trial中的历史步骤",
-      "跨trail跨任务的信息积累",
-      "外部知识"
+      "首先导入分词器和预训练的模型",
+      "将用户问题转成pytorch张量",
+      "使用generate方法生成回复"
     ]
   },
   {
-    "source": "25-0127Memory-based agent2.md",
-    "question": "参数化形式的记忆存储方法主要分为哪两类？",
+    "source": "1111LangChain3 模型调用和输出解析.md",
+    "question": "在进行大语言模型调用时，如何确保响应文本的正确性？",
     "answer_points": [
-      "微调方法",
-      "记忆编辑方法"
+      "使用分词器的decode方法将生成的令牌解码成文本",
+      "跳过任何特殊的令牌"
     ]
   },
   {
-    "source": "GSPO：从token级到序列级优化的范式转变.md",
-    "question": "为什么GRPO在训练大模型时会不稳定？",
+    "source": "0530Rag for Scratch——langchain.md",
+    "question": "什么是rag pipeline的第四阶段？",
     "answer_points": [
-      "高方差噪声导致单个token的重要性比率波动大，引入了高方差噪声，并随序列长度增加而累积；",
-      "clip机制放大了这种不稳定性，破坏了梯度方向的一致性；",
-      "MoE模型中重要性比率在不同训练轮次中剧烈震荡。"
+      "indexing是rag pipeline的第四阶段",
+      "就是将文档压缩为数值表示，以建立索引，便于后续的检索和生成"
     ]
   },
   {
-    "source": "GSPO：从token级到序列级优化的范式转变.md",
-    "question": "GSPO相较于GRPO有哪些优势？",
+    "source": "0530Rag for Scratch——langchain.md",
+    "question": "在rag indexing中，有哪些chunking方法？",
     "answer_points": [
-      "将优化粒度从token级提升至序列级；",
-      "基于整个回复序列的似然来计算重要性比率，并对同一提示下多个回答的奖励进行归一化处理；",
-      "在训练稳定性、效率和性能方面都显著优于GRPO。"
+      "五个等级：Character、Recursive、Document、Semantic、Agentic",
+      "Chunking方法将文本分块为独立的命题"
+    ]
+  },
+  {
+    "source": "SARATHI 之Chunked Prefill.md",
+    "question": "什么是Chunked Prefill，并且其主要优点是什么？",
+    "answer_points": [
+      "将一个用户问题的prefill阶段拆成多个计算量相同的chunk，每个chunk都能单独饱和GPU运算单元",
+      "有利于构建足够的混合batch，提升与Decode请求捆绑执行的机会"
+    ]
+  },
+  {
+    "source": "SARATHI 之Chunked Prefill.md",
+    "question": "为什么需要解码最大化批处理（Decode-Maximal Batching）？其如何工作？",
+    "answer_points": [
+      "将一个Chunked-Prefill计算块与尽可能多的Decode请求打包到同一batch中",
+      "通过复用相同Chunked-Prefill块的KV cache，从而提升Decode效率"
     ]
   }
 ]

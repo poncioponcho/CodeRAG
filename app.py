@@ -174,9 +174,10 @@ else:
             chunks.extend(split_by_headings(doc.page_content, doc.metadata["source"]))
         st.session_state.all_chunks = chunks
 
-    hybrid_retriever = HybridRetriever(vectorstore, st.session_state.all_chunks, vec_k=20, bm25_k=20)
+    # 大候选池 + 句子窗口插件（评估验证后的最优配置）
+    hybrid_retriever = HybridRetriever(vectorstore, st.session_state.all_chunks, vec_k=40, bm25_k=40)
     sentence_window = SentenceWindowPlugin(st.session_state.all_chunks, window_chunks=1)
-    rerank_retriever = RerankRetriever(hybrid_retriever, k=5, plugins=[sentence_window])
+    rerank_retriever = RerankRetriever(hybrid_retriever, k=10, plugins=[sentence_window])
 
     if "history" not in st.session_state:
         st.session_state.history = []

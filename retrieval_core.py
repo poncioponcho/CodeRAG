@@ -65,13 +65,14 @@ class HybridRetriever:
             self.tokenized_chunks.append(tokens)
         self.bm25 = BM25Okapi(self.tokenized_chunks)
 
-    def invoke(self, query: str):
-        # 1. 向量召回
+    def invoke(self, query: str, hyde_query: str = None):
+        # 1. 向量召回（如有 hyde_query，用其做向量检索）
+        vec_query = hyde_query if hyde_query else query
         vec_docs = self.vectorstore.as_retriever(
             search_kwargs={"k": self.vec_k}
-        ).invoke(query)
+        ).invoke(vec_query)
 
-        # 2. BM25 召回
+        # 2. BM25 召回（始终用原始 query，保留关键词匹配能力）
         query_tokens = list(jieba.cut(query))
         scores = self.bm25.get_scores(query_tokens)
         top_idx = np.argsort(scores)[-self.bm25_k:][::-1]
@@ -107,8 +108,11 @@ class RerankRetriever:
         scored.sort(key=lambda x: x[0], reverse=True)
         top_docs = [doc for _, doc in scored[:self.k]]
 
-        # 应用插件（按顺序）
+        # 应用插件（按顺序，传入 query 供需要 query 的插件使用）
         for plugin in self.plugins:
-            top_docs = plugin.apply(top_docs)
+            if hasattr(plugin, "apply_with_query"):
+                top_docs = plugin.apply_with_query(top_docs, query)
+            else:
+                top_docs = plugin.apply(top_docs)
 
         return top_docs
