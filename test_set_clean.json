@@ -17,6 +17,22 @@
     ]
   },
   {
+    "source": "GFPO.md",
+    "question": "为什么大模型会在训练过程中变成话唠？",
+    "answer_points": [
+      "基于奖励验证的强化学习算法（GRPO、PPO等），倾向于给答案正确且推理步骤更长的回答更高的奖励。",
+      "随着训练的进行，模型就倾向于用更长的回复来换取更高的奖励，即便回复中的大多数token对推理没有贡献。"
+    ]
+  },
+  {
+    "source": "GFPO.md",
+    "question": "GFPO是如何实现计算资源在训练和推理阶段的平衡的？",
+    "answer_points": [
+      "GFPO通过在训练阶段引入过滤机制，每个问题采样更大的响应组，并保留top-k的推理链。",
+      "根据问题难度动态调整保留响应数量，为更难的问题分配更多计算资源。"
+    ]
+  },
+  {
     "source": "Pageattention.md",
     "question": "PagedAttention如何管理KV缓存？",
     "answer_points": [
@@ -30,6 +46,14 @@
     "answer_points": [
       "按需分配，不提前预分配",
       "跨请求KVCache共享"
+    ]
+  },
+  {
+    "source": "25-0421Agentic RAG.md",
+    "question": "Modular RAG的关键创新是什么？",
+    "answer_points": [
+      "混合检索策略：将稀疏检索方法（例如 稀疏编码器-BM25）与密集检索技术（例如 DPR - Dense Passage Retrieval）相结合，准确性更高。",
+      "强调灵活性和定制性，像“搭积木”一样组装AI能力。将检索和生成流程分解为独立、可重用的组件，从而实现领域特定的优化和任务适应性。"
     ]
   },
   {
@@ -53,6 +77,22 @@
     "answer_points": [
       "ROUGE-L 衡量模型生成文本与参考文本之间最长公共子序列（Longest Common Subsequence）的匹配程度。",
       "最大值为 100。"
+    ]
+  },
+  {
+    "source": "0827如何写出优雅的Prompt.md",
+    "question": "什么是prompt在大模型中的作用？",
+    "answer_points": [
+      "prompt是输入给生成AI模型的数据，用于引导其输出",
+      "良好的prompt可以解决模型可能存在的幻觉问题和bad case"
+    ]
+  },
+  {
+    "source": "0827如何写出优雅的Prompt.md",
+    "question": "大模型数据处理的第4个level是什么？",
+    "answer_points": [
+      "利用用户的交互日志来驱动数据构造过程，收集用户的真实prompt",
+      "用规则或者LLM去分析用户的feedback，进而获得高质量的answer数据"
     ]
   },
   {
@@ -101,6 +141,14 @@
     "answer_points": [
       "通过将上下文分割成段，并采用滑动窗口方法来处理上下文",
       "位置编码的长度大幅降低，降低了对位置编码外推性的需求"
+    ]
+  },
+  {
+    "source": "25-0121Memory-based agent.md",
+    "question": "记忆增强规划策略的主要特点是什么？其具体实现方式有哪些？",
+    "answer_points": [
+      "通过引入一个附加的记忆组件来提升规划能力，该组件中存储了各种宝贵信息",
+      "分为RAG记忆和嵌入式记忆"
     ]
   },
   {
@@ -174,6 +222,15 @@
     "answer_points": [
       "微调方法",
       "记忆编辑方法"
+    ]
+  },
+  {
+    "source": "GSPO：从token级到序列级优化的范式转变.md",
+    "question": "GSPO相较于GRPO有哪些优势？",
+    "answer_points": [
+      "将优化粒度从token级提升至序列级；",
+      "基于整个回复序列的似然来计算重要性比率，并对同一提示下多个回答的奖励进行归一化处理；",
+      "在训练稳定性、效率和性能方面都显著优于GRPO。"
     ]
   }
 ]
