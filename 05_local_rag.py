@@ -8,6 +8,7 @@ from langchain_core.documents import Document
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
+
 def init_docs():
     os.makedirs("docs", exist_ok=True)
     files = {
@@ -41,6 +42,7 @@ RAG 适合知识频繁更新；Fine-tuning 适合改变模型行为。
             with open(path, "w", encoding="utf-8") as f:
                 f.write(content)
 
+
 def build_knowledge_base():
     docs = []
     for filename in os.listdir("docs"):
@@ -48,18 +50,19 @@ def build_knowledge_base():
             with open(f"docs/{filename}", "r", encoding="utf-8") as f:
                 content = f.read()
             docs.append(Document(page_content=content, metadata={"source": filename}))
-    
+
     splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
     chunks = splitter.split_documents(docs)
     print(f"共加载 {len(docs)} 个文档，切分为 {len(chunks)} 个 chunk")
     return chunks
+
 
 def build_vectorstore(chunks):
     embedding = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
     vectorstore = Chroma.from_documents(chunks, embedding, persist_directory="./chroma_db")
     return vectorstore
 
-# ========== 原生 HTTP 调用 Ollama（绕过 langchain-ollama bug） ==========
+
 def ollama_generate(prompt: str, model: str = "qwen2.5:7b", temperature: float = 0.1) -> str:
     resp = requests.post(
         "http://localhost:11434/api/generate",
@@ -73,9 +76,10 @@ def ollama_generate(prompt: str, model: str = "qwen2.5:7b", temperature: float =
     resp.raise_for_status()
     return resp.json()["response"]
 
+
 def main():
     init_docs()
-    
+
     if os.path.exists("./chroma_db") and os.listdir("./chroma_db"):
         print(">>> 检测到已有向量库，直接加载")
         embedding = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
@@ -83,22 +87,22 @@ def main():
     else:
         chunks = build_knowledge_base()
         vectorstore = build_vectorstore(chunks)
-    
+
     retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
-    
+
     print("\n>>> 本地 RAG 已启动，输入问题（exit 退出）")
     history = []
-    
+
     while True:
         query = input("\n你: ").strip()
         if query.lower() in ["exit", "quit", "退出"]:
             break
-        
+
         docs = retriever.invoke(query)
         context = "\n\n".join([f"[{d.metadata['source']}] {d.page_content}" for d in docs])
-        
+
         history_str = "\n".join([f"Q: {q}\nA: {a}" for q, a in history[-2:]])
-        
+
         prompt = f"""你是技术面试助手。基于以下参考资料用中文回答问题。
 如果参考资料中没有相关信息，请明确说明"资料中未提及"。
 
@@ -111,11 +115,11 @@ def main():
 当前问题：{query}
 
 请回答："""
-        
-        # 改用原生 HTTP，彻底告别 503
+
         answer = ollama_generate(prompt)
         print(f"AI: {answer}")
         history.append((query, answer))
+
 
 if __name__ == "__main__":
     main()

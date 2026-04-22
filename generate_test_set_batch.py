@@ -3,61 +3,9 @@ import json
 import time
 import random
 import subprocess
-import re
 from pathlib import Path
 import requests
-from typing import List, Tuple
-from core.run_lock import acquire_batch_lock, refresh_batch_lock, release_batch_lock
-
-
-def _normalize_text(s: str) -> str:
-    return (s or "").lower().replace(" ", "").replace("\n", "")
-
-
-def _is_answerable(qa: dict, source_text: str) -> bool:
-    """
-    过滤不可回答/过细节条目（弱监督）：
-    - question 非空
-    - answer_points 为 list 且长度合理
-    - 每个要点必须能在源文本中找到"短证据片段"（避免编造细节）
-    """
-    q = (qa.get("question") or "").strip()
-    pts = qa.get("answer_points") or []
-    if not q or not isinstance(pts, list) or not pts:
-        return False
-
-    # 避免过度细碎/超长要点
-    if len(pts) > 6:
-        return False
-
-    t = _normalize_text(source_text)
-    hit = 0
-    for p in pts:
-        p = (p or "").strip()
-        if not p:
-            continue
-        
-        # 修复1：前15字符匹配（从12放宽到15）
-        key = _normalize_text(p[:15])
-        if key and key in t:
-            hit += 1
-            continue
-        
-        # 修复2：退化为关键词匹配——提取所有≥4字的连续中文/英文词
-        keywords = re.findall(r'[\u4e00-\u9fff]{4,}|[a-zA-Z]{5,}', p)
-        if keywords:
-            if any(_normalize_text(kw) in t for kw in keywords[:3]):
-                hit += 1
-                continue
-        
-        # 修复3：最后尝试前8字符模糊匹配
-        key = _normalize_text(p[:8])
-        if key and key in t:
-            hit += 1
-
-    # 至少命中一半要点（向上取整）
-    need = (len(pts) + 1) // 2
-    return hit >= need
+import re
 
 
 def get_cpu_temp() -> float:
@@ -101,28 +49,20 @@ def cooldown_if_hot(threshold: float = 78.0, cooldown_sec: int = 15) -> bool:
 
 
 def ollama_generate(prompt: str, temperature: float = 0.7) -> str:
-    last_err = None
-    for attempt in range(3):
-        try:
-            resp = requests.post(
-                "http://localhost:11434/api/generate",
-                json={
-                    "model": "qwen2.5:7b",
-                    "prompt": prompt,
-                    "stream": False,
-                    "options": {"temperature": temperature, "num_ctx": 8192},
-                },
-                timeout=180,
-            )
-            resp.raise_for_status()
-            return resp.json()["response"]
-        except Exception as e:
-            last_err = e
-            time.sleep(2 * (attempt + 1))
-    raise RuntimeError(f"ollama_generate failed after retries: {last_err}")
+    resp = requests.post(
+        "http://localhost:11434/api/generate",
+        json={
+            "model": "qwen2.5:7b",
+            "prompt": prompt,
+            "stream": False,
+            "options": {"temperature": temperature, "num_ctx": 8192}
+        }
+    )
+    resp.raise_for_status()
+    return resp.json()["response"]
 
 
-def generate_qa_batch(doc_batch: List[Tuple[str, str]], questions_per_doc: int = 2) -> list:
+def generate_qa_batch(doc_batch: list, questions_per_doc: int = 2) -> list:
     """
     一批文档一起生成问答对。
     doc_batch: [(filename, text_chunk), ...]
@@ -152,38 +92,70 @@ def generate_qa_batch(doc_batch: List[Tuple[str, str]], questions_per_doc: int =
     try:
         response = ollama_generate(prompt)
         content = response.strip()
+        # 提取代码块
         if "```json" in content:
             content = content.split("```json")[1].split("```")[0]
         elif "```" in content:
             content = content.split("```")[1].split("```")[0]
 
-        qa_pairs = json.loads(content.strip())
-        for qa in qa_pairs:
+        # 健壮的 JSON 提取：优先找数组 [...]，否则找对象并取列表字段
+        match = re.search(r'\[\s*{.*?}\s*\]', content, re.DOTALL)
+        if not match:
+            # 尝试提取包含 "qa_pairs" 的对象
+            match = re.search(r'\{.*?"qa_pairs"\s*:\s*\[.*?\]\s*\}', content, re.DOTALL)
+        if match:
+            content = match.group(0)
+
+        data = json.loads(content)
+
+        # 如果解析为字典，尝试提取常用字段
+        if isinstance(data, dict):
+            if "qa_pairs" in data:
+                data = data["qa_pairs"]
+            elif "pairs" in data:
+                data = data["pairs"]
+            else:
+                # 取第一个值为列表的字段
+                for v in data.values():
+                    if isinstance(v, list):
+                        data = v
+                        break
+                else:
+                    print(f"  [Debug] 返回 JSON 为对象且无列表字段，跳过")
+                    return []
+
+        if not isinstance(data, list):
+            print(f"  [Debug] 最终数据不是列表: {type(data)}")
+            return []
+
+        # 补全 source 字段
+        for qa in data:
             if "source" not in qa:
                 qa["source"] = doc_batch[0][0] if doc_batch else "unknown"
-        return qa_pairs
+        return data
 
     except Exception as e:
         print(f"  ✗ 批量生成失败: {e}")
+        # 打印部分响应内容以便调试
+        snippet = response[:200] if 'response' in locals() else ""
+        if snippet:
+            print(f"  [Debug] 响应片段: {snippet}")
         return []
 
 
 def main():
-    acquire_batch_lock(note="generate_test_set_batch.py")
     docs_dir = Path("docs")
     all_docs = []
 
-    for doc_path in docs_dir.rglob("*.md"):
-        text = doc_path.read_text(encoding="utf-8", errors="ignore")
-        rel = str(doc_path.relative_to(docs_dir))
-        # 修复：不再截断，用全文
-        all_docs.append((rel, text))
+    for doc_path in docs_dir.glob("*.md"):
+        text = doc_path.read_text(encoding="utf-8")
+        all_docs.append((doc_path.name, text[:2000]))
 
     if not all_docs:
         print("!!! docs/ 目录没有文档")
         return
 
-    # 采样：文档太多时只测代表性样本
+    # 采样
     MAX_DOCS = 40
     if len(all_docs) > MAX_DOCS:
         print(f"文档共 {len(all_docs)} 个，随机采样 {MAX_DOCS} 个生成测试集")
@@ -191,8 +163,7 @@ def main():
     else:
         print(f"文档共 {len(all_docs)} 个，全部处理")
 
-    # 修复：批大小从4降到2，提高JSON稳定性
-    BATCH_SIZE = 2
+    BATCH_SIZE = 3          # 可改为 4，若失败率高保持 3
     TEMP_THRESHOLD = 78.0
     COOLDOWN_SEC = 20
 
@@ -207,35 +178,21 @@ def main():
         batch = all_docs[i:i + BATCH_SIZE]
 
         print(f"[{batch_num}/{total_batches}] 处理 {len(batch)} 个文档...")
-        refresh_batch_lock(note=f"generate_test_set_batch.py running {batch_num}/{total_batches}")
 
-        # 生成前检查温度
         cooldown_if_hot(TEMP_THRESHOLD, COOLDOWN_SEC)
 
-        # 生成
         t0 = time.time()
         qa_pairs = generate_qa_batch(batch, questions_per_doc=2)
         elapsed = time.time() - t0
 
-        # 过滤不可回答/过细节
-        text_map = {name: text for name, text in batch}
-        filtered = []
-        for qa in qa_pairs:
-            src = qa.get("source") or ""
-            src_text = text_map.get(src, "")
-            if _is_answerable(qa, src_text):
-                filtered.append(qa)
+        all_qa.extend(qa_pairs)
+        print(f"  ✓ 生成 {len(qa_pairs)} 条，耗时 {elapsed:.1f}s")
 
-        all_qa.extend(filtered)
-        print(f"  ✓ 生成 {len(qa_pairs)} 条，过滤后保留 {len(filtered)} 条，耗时 {elapsed:.1f}s")
-
-        # 生成后强制冷却
         if batch_num < total_batches:
             rest = max(3, int(elapsed * 0.3))
             print(f"  😴 休息 {rest}s...")
             time.sleep(rest)
 
-    # 保存
     with open("test_set.json", "w", encoding="utf-8") as f:
         json.dump(all_qa, f, indent=2, ensure_ascii=False)
 
@@ -247,7 +204,4 @@ def main():
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    finally:
-        release_batch_lock()
+    main()

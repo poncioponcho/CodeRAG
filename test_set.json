@@ -1,256 +1,292 @@
 [
   {
-    "source": "1203向量索引.md",
-    "question": "IVF_FLAT 索引方法的核心原理是什么？",
+    "source": "Qwen3-VL技术报告解读.md",
+    "question": "Qwen3-VL在架构方面做了哪些改进？",
     "answer_points": [
-      "通过聚类算法将高维空间中的向量划分为多个子空间（簇）",
-      "为每个簇创建倒排索引，从而在查询时仅关注与查询向量相似的簇"
+      "交错-MRoPE",
+      "DeepStack",
+      "基于文本的时间对齐机制"
     ]
   },
   {
-    "source": "1203向量索引.md",
-    "question": "IVF_FLAT 索引方法中 nprobe 参数的作用是什么？",
+    "source": "Qwen3-VL技术报告解读.md",
+    "question": "Qwen3-VL的训练流程分为哪几个阶段？",
     "answer_points": [
-      "控制搜索时考虑的簇的数量",
-      "平衡查询精度和查询速度"
+      "预训练：四阶段（视觉语言对齐→全参数多模态训练→长上下文适应→超长上下文优化）",
+      "后训练：三阶段（监督微调→知识蒸馏→强化学习）"
     ]
   },
   {
-    "source": "0611MOCO.md",
-    "question": "什么是MOCO的预训练目的？",
+    "source": "GFPO.md",
+    "question": "为什么大模型会在训练过程中变成话唠？",
     "answer_points": [
-      "只需要简单的微调就可以轻松的迁移到下游任务中",
-      "主流的工作都是在ImageNet上做有监督的训练，而Moco采用无监督的方式进行训练"
+      "基于奖励验证的强化学习算法（GRPO、PPO等），倾向于给答案正确且推理步骤更长的回答更高的奖励。",
+      "随着训练的进行，模型就倾向于用更长的回复来换取更高的奖励，即便回复中的大多数token对推理没有贡献。"
     ]
   },
   {
-    "source": "0611MOCO.md",
-    "question": "MOCO中的memory bank和dictionary有何区别？",
+    "source": "GFPO.md",
+    "question": "GFPO是如何实现计算资源在训练和推理阶段的平衡的？",
     "answer_points": [
-      "memory bank包含所有的图片，每轮中都要从中采样一个mini-batch的数据",
-      "dictionary动态字典，包含大量图片，每轮选取的mini-batch都要跟字典中的图片进行对比学习。动态体现在每一轮中的key和dictionary都是变化的"
+      "GFPO通过在训练阶段引入过滤机制，每个问题采样更大的响应组，并保留top-k的推理链。",
+      "根据问题难度动态调整保留响应数量，为更难的问题分配更多计算资源。"
     ]
   },
   {
-    "source": "0522PEFT（Parameter-Efficient Fine-Tuning ）.md",
-    "question": "什么是LoRA技术？其核心思想是什么？",
+    "source": "Pageattention.md",
+    "question": "PagedAttention如何管理KV缓存？",
     "answer_points": [
-      "LoRA是一种用于微调大型预训练语言模型的方法。",
-      "它的核心思想是在模型的关键层中添加小型、低秩的矩阵来调整模型的行为，而不是直接改变整个模型的结构。"
+      "通过集中式调度器发送指令来管理GPU工作器上的物理KV缓存内存",
+      "在非连续的内存空间中存储连续的键和值"
     ]
   },
   {
-    "source": "0522PEFT（Parameter-Efficient Fine-Tuning ）.md",
-    "question": "LoRA技术的工作原理是什么？其具体步骤有哪些？",
+    "source": "Pageattention.md",
+    "question": "PagedAttention的优点有哪些？",
     "answer_points": [
-      "选择要调整的权重矩阵：在大型模型中，我们首先确定要微调的权重矩阵。",
-      "引入两个低秩矩阵A和B，并通过计算它们的乘积生成一个新的矩阵AB。"
+      "按需分配，不提前预分配",
+      "跨请求KVCache共享"
     ]
   },
   {
-    "source": "为什么现在大模型在推理阶段都是左padding？.md",
-    "question": "为什么大模型在推理阶段选择左padding而非右padding？",
+    "source": "25-0421Agentic RAG.md",
+    "question": "Naive RAG的主要缺点是什么？",
     "answer_points": [
-      "生成时默认用序列最后一个token的logits采样，右padding会导致采样逻辑拿到无意义的logits；",
-      "KV-cache能复用，在线推理显存和吞吐更高效。"
+      "缺乏上下文意识：由于依赖词汇匹配而非语义理解，检索到的文档往往无法捕捉查询的语义细微差别。",
+      "输出碎片化：缺乏数据预处理或上下文整合，往往导致回答不连贯或过于通用。"
     ]
   },
   {
-    "source": "为什么现在大模型在推理阶段都是左padding？.md",
-    "question": "在训练和推理中，什么是padding？",
+    "source": "25-0421Agentic RAG.md",
+    "question": "Modular RAG的关键创新是什么？",
     "answer_points": [
-      "为了批量并行处理可变长度的序列，需要对短序列进行填充；",
-      "做法是往句子里塞“占位符token（<pad>）”。"
+      "混合检索策略：将稀疏检索方法（例如 稀疏编码器-BM25）与密集检索技术（例如 DPR - Dense Passage Retrieval）相结合，准确性更高。",
+      "强调灵活性和定制性，像“搭积木”一样组装AI能力。将检索和生成流程分解为独立、可重用的组件，从而实现领域特定的优化和任务适应性。"
     ]
   },
   {
-    "source": "25-0222NSA.md",
-    "question": "NSA机制如何在长文本任务和推理任务上实现高效计算？",
+    "source": "0613 lora.md",
+    "question": "lora模型中的h表达式是什么？",
     "answer_points": [
-      "通过将键和值组织成时间块并通过三条注意力路径处理它们来减少每个查询的计算：压缩的粗粒度字符、选择性保留的细粒度字符和用于局部上下文信息的滑动窗口。",
-      "NSA在基准测试、长文本任务、推理任务上都取得了比全注意力更优的结果，而计算速度却远快于全注意力计算。"
+      "h= Wor + AW = Wor+ BAz"
     ]
   },
   {
-    "source": "25-0222NSA.md",
-    "question": "预填充技术如何提高模型的响应速度和节省计算资源？",
+    "source": "0613 lora.md",
+    "question": "动量参数m在MOCO模型中有什么作用？",
     "answer_points": [
-      "在模型开始处理用户输入之前，Pre-filling可以将一些固定的上下文或不随用户输入改变的内容预先输入模型，计算出hidden states和KV cache。",
-      "通过动态缓存（例如kv cache），模型可以在每次计算中保存一部分隐含层的计算结果，并在接下来的计算中复用这些缓存的数据。"
+      "目的就是不让当前时刻的输出完全依赖于当前时刻的输入",
+      "因此当m很大时,就会改变得很缓慢；当m很小时,就比较依赖于"
     ]
   },
   {
-    "source": "DistServe：预填充和解码解耦.md",
-    "question": "什么是TTFT？",
+    "source": "0605指令微调数据集.md",
+    "question": "在生成自定义任务的数据集中，如何确保新指令的多样性？",
     "answer_points": [
-      "生成第一个 token 的等待时间",
-      "Prefill阶段是计算密集型任务"
+      "只有当一条新指令与任何现有指令的ROUGE-L重叠度小于0.7时，才会被添加到任务池中。",
+      "排除了包含一些特定关键词（如图像、图片、图表）的指令，这些关键词通常不能被语言模型处理。"
     ]
   },
   {
-    "source": "DistServe：预填充和解码解耦.md",
-    "question": "如何解释高Throughput而低Goodput的现象？",
+    "source": "0605指令微调数据集.md",
+    "question": "ROUGE-L衡量的是什么？其值范围是什么？",
     "answer_points": [
-      "为了提升整体吞吐量，现有系统通常采用continuous batching策略",
-      "部分请求在 decode 阶段等待过久，违反 SLO"
+      "ROUGE-L 衡量模型生成文本与参考文本之间最长公共子序列（Longest Common Subsequence）的匹配程度。",
+      "最大值为 100。"
     ]
   },
   {
-    "source": "大模型在强化学习中探索和学习的熵机制.md",
-    "question": "熵崩溃现象是什么？",
+    "source": "0827如何写出优雅的Prompt.md",
+    "question": "什么是prompt在大模型中的作用？",
     "answer_points": [
-      "指在不加熵正则干预的情况下，RL训练过程中policy entropy会在早期迅速下降，最终趋近于零，导致模型几乎只会选择极少数确定性的动作，探索能力完全丧失。",
-      "这直接带来了下游reward（性能）的上限瓶颈：模型性能在训练初期快速提升，但很快到达平台期，后续难以突破。"
+      "prompt是输入给生成AI模型的数据，用于引导其输出",
+      "良好的prompt可以解决模型可能存在的幻觉问题和bad case"
     ]
   },
   {
-    "source": "大模型在强化学习中探索和学习的熵机制.md",
-    "question": "解决熵崩溃的方法有哪些？",
+    "source": "0827如何写出优雅的Prompt.md",
+    "question": "大模型数据处理的第4个level是什么？",
     "answer_points": [
-      "提出了两种控制策略熵的方法：Clip-Cov方法通过识别出具有最高协方差的一小部分token，并在策略更新时，对其梯度的影响进行裁剪或直接分离其梯度。",
-      "KL-Cov方法则是在高协方差token上施加一个额外的KL散度惩罚项，旨在约束当前策略与先前策略在这些关键token上的分布差异。"
+      "利用用户的交互日志来驱动数据构造过程，收集用户的真实prompt",
+      "用规则或者LLM去分析用户的feedback，进而获得高质量的answer数据"
     ]
   },
   {
-    "source": "25-0107Agent Planning3 反思.md",
-    "question": "什么是Reflexion Agent?",
+    "source": "重构残差连接：DeepSeek mHC 架构中的几何与数学原理.md",
+    "question": "为什么大模型需要重构残差连接？",
     "answer_points": [
-      "Reflexion Agent在生成每一个trajectory后，进行启发式评估，生成反思文本并保留在记忆缓冲区中。",
-      "评估器模型对执行者产生的输出进行打分，自我反思模型协助执行者自我提升。"
+      "深度神经网络在传递信息过程中会逐渐衰减，导致深层网络难以训练",
+      "Residual Connection具有恒等映射特性，可以保证模型训练过程的稳定性"
     ]
   },
   {
-    "source": "25-0107Agent Planning3 反思.md",
-    "question": "如何定义效率低下的规划和幻觉?",
+    "source": "重构残差连接：DeepSeek mHC 架构中的几何与数学原理.md",
+    "question": "Hyper-Connections（HC）是如何工作的？",
     "answer_points": [
-      "效率低下的规划指的是长时间未成功完成的trajectory。",
-      "幻觉定义为一系列连续相同的行动，这些行动导致在环境中观察到相同的结果。"
+      "通过扩展残差流的宽度并增强连接的复杂性",
+      "不改变计算开销的前提下，显著提升了拓扑复杂性"
     ]
   },
   {
-    "source": "0530Rag for Scratch——langchain.md",
-    "question": "什么是rag pipeline的第四阶段？",
+    "source": "0528Rag for Scratch——langchain.md",
+    "question": "Routing在RAG pipeline中的作用是什么？",
     "answer_points": [
-      "indexing是rag pipeline的第四阶段，就是将文档压缩为数值表示，以建立索引，便于后续的检索和生成。"
+      "依据query的内容路由到正确的数据源",
+      "实际上是一个分类任务"
     ]
   },
   {
-    "source": "0530Rag for Scratch——langchain.md",
-    "question": "什么是multi-representation indexing？其基本思想是什么？",
+    "source": "0528Rag for Scratch——langchain.md",
+    "question": "如何实现语义路由？",
     "answer_points": [
-      "Multi-Vector Retriever使用一个简单而强大的RAG理念：将用于答案生成的文档与用于检索的参考文档解耦。",
-      "基本思想是使用更小/简洁的表示（摘要或块）进行检索，但将它们链接到完整文档/上下文以进行生成。"
+      "使用embeddings将query路由到最相关的prompt",
+      "特别有用的技术之一是通过语义相似度进行路由"
     ]
   },
   {
-    "source": "25-0228Deep research.md",
-    "question": "为什么说DeepSearcher可能是继Simple RAG与Graph RAG之后的新的主流RAG思路？",
+    "source": "1025Long context4 提示压缩2.md",
+    "question": "LLMLingua 的预算控制器是如何工作的？其主要作用是什么？",
     "answer_points": [
-      "解决了过去的RAG无法对问题进行拆解的问题，现在，系统能够理解问题的深层次含义，并进行多步骤推理与分析",
-      "引入向量搜索技术后，系统能够从海量数据中提取出最相关的、高质量的信息，并将其有效融合"
+      "用于demonstration的压缩，从而粗颗粒度地控制budget",
+      "过多冗余的demonstration会占据instruction和query的位置"
     ]
   },
   {
-    "source": "25-0401GRPO.md",
-    "question": "在GRPO算法中，为什么使用Advantage而不是reward？",
+    "source": "1025Long context4 提示压缩2.md",
+    "question": "LLMLingua 的迭代令牌级提示压缩（ITPC）算法是如何工作的？其主要特点是什么？",
     "answer_points": [
-      "考虑当前回答相比其他回答的优劣",
-      "最大化生成更高Advantage回答的概率"
+      "通过迭代处理提示中的每个片段并考虑当前上下文中每个标记的条件概率来评估每个标记的重要性",
+      "有助于更好地保留令牌之间的依赖关系"
     ]
   },
   {
-    "source": "0515self Attention与kv cache.md",
-    "question": "为什么在推理阶段需要使用KV Cache机制？",
+    "source": "1016Long context3-上下文窗口分割 (1)(1).md",
+    "question": "PCW（Parallel context windows）是如何处理长文本问题的？其主要特点是什么？",
     "answer_points": [
-      "新生成的token会加入序列，一起作为下一次解码的输入",
-      "由于单向注意力的存在，新加入的token并不会影响前面序列的计算"
+      "通过将上下文分割成段，并采用滑动窗口方法来处理上下文",
+      "位置编码的长度大幅降低，降低了对位置编码外推性的需求"
     ]
   },
   {
-    "source": "0515self Attention与kv cache.md",
-    "question": "KV Cache机制如何通过L2缓存来提高模型推理速度？",
+    "source": "1016Long context3-上下文窗口分割 (1)(1).md",
+    "question": "NBCE（Naive Bayes Conditional Estimation）方法是如何工作的？其主要优缺点是什么？",
     "answer_points": [
-      "把已经计算过的每层的kv值保存起来",
-      "通过把kv值存储在速度远快于显存的L2缓存中，可以大大减少kv值的保存和读取"
+      "基于独立假设的贝叶斯公式，即朴素贝叶斯来估计p(T|S1,S2,⋯,Sn)",
+      "Max Pooling配合β=0.25，用Greedy Search总体表现比较好，但Random Sample出来的结果基本不可读"
     ]
   },
   {
-    "source": "0709Flash attention-原理.md",
-    "question": "传统自注意力模块面临的主要问题有哪些？",
+    "source": "25-0121Memory-based agent.md",
+    "question": "记忆增强规划策略的主要特点是什么？其具体实现方式有哪些？",
     "answer_points": [
-      "显存占用多",
-      "HBM读写次数多"
+      "通过引入一个附加的记忆组件来提升规划能力，该组件中存储了各种宝贵信息",
+      "分为RAG记忆和嵌入式记忆"
     ]
   },
   {
-    "source": "0709Flash attention-原理.md",
-    "question": "Flash Attention是如何优化自注意力模块的计算速度和内存需求的？",
+    "source": "25-0121Memory-based agent.md",
+    "question": "什么是短期记忆、长期记忆以及混合记忆？它们在智能体中的作用分别是什么？",
     "answer_points": [
-      "将从输入到输出的整个过程进行融合，省去矩阵S、P的存储开销",
-      "采用分片操作（tiling），每次进行部分计算，确保这些计算结果能在SRAM内进行交互"
+      "短期记忆关注于当前情境的上下文信息，是短暂且有限的",
+      "长期记忆储存智能体的历史行为和思考，通过外部向量存储实现"
     ]
   },
   {
-    "source": "Medusa.md",
-    "question": "MEDUSA头如何初始化？",
+    "source": "0622Quantization.md",
+    "question": "量化指的是什么过程？",
     "answer_points": [
-      "第k个解码头用于预测第t+k+1个位置的词，预测记为p<sub>t,k</sub>",
-      "W<sup>(1)</sup><sub>k</sub> 初始化为原语言模型head权重，W<sup>(2)</sup><sub>k</sub>初始化为0"
+      "将连续的无限值映射到一组较小的离散有限值的过程",
+      "将模型的权重从高精度数据类型转换为低精度数据类型的过程"
     ]
   },
   {
-    "source": "Medusa.md",
-    "question": "MEDUSA方法的三个主要步骤是什么？",
+    "source": "0622Quantization.md",
+    "question": "量化的主要挑战是什么？",
     "answer_points": [
-      "生成候选，通过Medusa头实现",
-      "处理候选，通过树注意力实现",
-      "接受候选，通过拒绝采样或者典型接受实现"
+      "如何在减少表示精度的同时不让模型的准确度掉下来，即在压缩率与准确率损失间作trade-off"
     ]
   },
   {
-    "source": "dl_nlp/0709Flash attention-原理.md",
-    "question": "自注意力模块的计算和空间复杂度为多少？假设N=2048，d=128。",
+    "source": "Engram.md",
+    "question": "什么是MoE模型中的稀疏性？",
     "answer_points": [
-      "Q, K, V ∈RN×d",
-      "O(N^2)"
+      "MoE模型虽然参数量巨大，但处理每个任务时，只激活其中很少一部分参数。",
+      ""
     ]
   },
   {
-    "source": "dl_nlp/0709Flash attention-原理.md",
-    "question": "传统attention算法在处理长序列时面临哪些问题？",
+    "source": "Engram.md",
+    "question": "Engram如何实现O(1)复杂度的哈希检索？",
     "answer_points": [
-      "显存占用多，由于计算过程中存储完整注意力矩阵P和S",
-      "HBM读写次数多，需要传输的数据量大"
+      "通过条件记忆作为补充的稀疏性维度，利用N-gram从嵌入知识表中查找静态知识。",
+      ""
     ]
   },
   {
-    "source": "0816DPO.md",
-    "question": "DPO算法是如何优化策略模型的？",
+    "source": "0806强化学习3蒙特卡洛方法.md",
+    "question": "Monte Carlo 方法的核心思想是什么？",
     "answer_points": [
-      "通过对policy model进行优化，最大限度提升生成prefer答案的可能性",
-      "直接将偏好损失定义为policy中的一个函数，使用简单的二元交叉熵目标来优化策略"
+      "用样本均值来近似期望",
+      "依据大数定理，对于随机变量X，给定N个iid采样样本x1, x2, ..., xn，则x̄是E(X)的无偏估计。"
     ]
   },
   {
-    "source": "0816DPO.md",
-    "question": "DPO算法是如何通过奖励模型来优化策略的？",
+    "source": "0806强化学习3蒙特卡洛方法.md",
+    "question": "在Monte Carlo 方法中，如何计算状态s下的累计回报v(s)？",
     "answer_points": [
-      "利用从奖励函数到最优策略的映射，将奖励函数的损失函数转换为策略的损失函数",
-      "通过对policy model进行优化，最大限度提升生成prefer答案的可能性"
+      "可以用样本均值估计期望",
+      "假设g1, g2, ..., gn是多个episode得到的n个s状态的累计回报，则v(s) = (g1 + g2 + ... + gn)/n 是E[G|S = t s]的无偏估计。"
     ]
   },
   {
-    "source": "0730分布式训练2——DDP.md",
-    "question": "如何进行分布式模型训练？",
+    "source": "SAPO.md",
+    "question": "SAPO解决了MoE模型中的哪些问题？",
     "answer_points": [
-      "数据并行（Data Parallel），即将数据切分到多个GPU上，并在每个GPU上执行相同的模型副本；模型并行（Model Parallelism）、流水并行（Pipeline Parallel）和张量并行（Tensor Parallel）等其他形式的并行计算方法。"
+      "在MoE模型中，token级重要性比率高方差会导致训练不稳定性。",
+      "SAPO通过引入平滑的、温度控制的门控函数来连续地衰减偏离策略的更新，同时保留有用的学习信号。"
     ]
   },
   {
-    "source": "0730分布式训练2——DDP.md",
-    "question": "多设备加速比是如何定义的？",
+    "source": "SAPO.md",
+    "question": "SAPO与GSPO相比有哪些优势？",
     "answer_points": [
-      "多设备加速比指的是使用多个计算设备进行并行处理时，相对于单设备计算速度的加速比例。理想情况下，如果使用n个设备，则理论上的加速比是n倍，但实际上由于通信开销、负载不均衡等因素，实际的加速比往往低于理论值。"
+      "保持了序列级别连贯性，通过软门控构建了一个连续的信任区域。",
+      "引入了非对称温度设计，通过对负向token梯度施加更快的衰减。"
+    ]
+  },
+  {
+    "source": "25-0127Memory-based agent2.md",
+    "question": "记忆的来源有哪些？",
+    "answer_points": [
+      "同一个trial中的历史步骤",
+      "跨trail跨任务的信息积累",
+      "外部知识"
+    ]
+  },
+  {
+    "source": "25-0127Memory-based agent2.md",
+    "question": "参数化形式的记忆存储方法主要分为哪两类？",
+    "answer_points": [
+      "微调方法",
+      "记忆编辑方法"
+    ]
+  },
+  {
+    "source": "GSPO：从token级到序列级优化的范式转变.md",
+    "question": "为什么GRPO在训练大模型时会不稳定？",
+    "answer_points": [
+      "高方差噪声导致单个token的重要性比率波动大，引入了高方差噪声，并随序列长度增加而累积；",
+      "clip机制放大了这种不稳定性，破坏了梯度方向的一致性；",
+      "MoE模型中重要性比率在不同训练轮次中剧烈震荡。"
+    ]
+  },
+  {
+    "source": "GSPO：从token级到序列级优化的范式转变.md",
+    "question": "GSPO相较于GRPO有哪些优势？",
+    "answer_points": [
+      "将优化粒度从token级提升至序列级；",
+      "基于整个回复序列的似然来计算重要性比率，并对同一提示下多个回答的奖励进行归一化处理；",
+      "在训练稳定性、效率和性能方面都显著优于GRPO。"
     ]
   }
 ]
