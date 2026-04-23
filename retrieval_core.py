@@ -1,4 +1,4 @@
-"""检索核心模块：文档切分、Hybrid 检索、Rerank 精排。
+"""检索核心模块：文档切分、Hybrid 检索、Rerank 精排、HyDE增强。
 供 app.py 与 evaluate_batch.py 共用，避免重复代码。
 """
 
@@ -66,6 +66,13 @@ class HybridRetriever:
         self.bm25 = BM25Okapi(self.tokenized_chunks)
 
     def invoke(self, query: str, hyde_query: str = None):
+        """
+        执行混合检索
+        
+        Args:
+            query: 原始查询
+            hyde_query: HyDE生成的假设答案（可选）
+        """
         # 1. 向量召回（如有 hyde_query，用其做向量检索）
         vec_query = hyde_query if hyde_query else query
         vec_docs = self.vectorstore.as_retriever(
@@ -89,17 +96,53 @@ class HybridRetriever:
         return results
 
 
+# ========== HyDE增强检索器 ==========
+class HyDERetriever:
+    """集成HyDE的检索器：自动根据问题类型决定是否使用HyDE"""
+    
+    def __init__(self, hybrid_retriever, hyde_generator=None):
+        self.hybrid = hybrid_retriever
+        self.hyde_generator = hyde_generator
+        self._hyde_info = {}  # 存储最近一次HyDE信息
+    
+    def invoke(self, query: str, force_hyde: bool = False):
+        """执行检索，自动决定是否使用HyDE"""
+        hyde_text = None
+        used_hyde = False
+        classification = None
+        
+        if self.hyde_generator:
+            hyde_text, used_hyde, classification = self.hyde_generator.generate(
+                query, force_hyde=force_hyde
+            )
+        
+        docs = self.hybrid.invoke(query, hyde_query=hyde_text)
+        
+        # 保存HyDE信息供后续使用
+        self._hyde_info = {
+            "used": used_hyde,
+            "hyde_text": hyde_text,
+            "classification": classification
+        }
+        
+        return docs
+    
+    def get_hyde_info(self):
+        """获取最近一次检索的HyDE信息"""
+        return self._hyde_info
+
+
 # ========== Re-Rank 检索器（在 Hybrid 之后精排，支持插件后处理） ==========
 class RerankRetriever:
-    def __init__(self, hybrid_retriever, cross_encoder_model="cross-encoder/ms-marco-MiniLM-L-6-v2",
+    def __init__(self, base_retriever, cross_encoder_model="cross-encoder/ms-marco-MiniLM-L-6-v2",
                  k=3, plugins=None):
-        self.hybrid = hybrid_retriever
+        self.base = base_retriever
         self.k = k
         self.reranker = CrossEncoder(cross_encoder_model)
         self.plugins = plugins or []
-
+        
     def invoke(self, query: str):
-        candidates = self.hybrid.invoke(query)
+        candidates = self.base.invoke(query)
         if not candidates:
             return []
         pairs = [(query, doc.page_content) for doc in candidates]
@@ -116,3 +159,26 @@ class RerankRetriever:
                 top_docs = plugin.apply(top_docs)
 
         return top_docs
+    
+    def invoke_with_hyde_info(self, query: str):
+        """执行检索并返回HyDE信息"""
+        candidates = self.base.invoke(query)
+        hyde_info = self.base.get_hyde_info() if hasattr(self.base, 'get_hyde_info') else {}
+        
+        if not candidates:
+            return [], hyde_info
+        
+        pairs = [(query, doc.page_content) for doc in candidates]
+        scores = self.reranker.predict(pairs)
+        scored = list(zip(scores, candidates))
+        scored.sort(key=lambda x: x[0], reverse=True)
+        top_docs = [doc for _, doc in scored[:self.k]]
+
+        # 应用插件
+        for plugin in self.plugins:
+            if hasattr(plugin, "apply_with_query"):
+                top_docs = plugin.apply_with_query(top_docs, query)
+            else:
+                top_docs = plugin.apply(top_docs)
+
+        return top_docs, hyde_info

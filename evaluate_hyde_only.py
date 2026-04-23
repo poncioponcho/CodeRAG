@@ -15,7 +15,7 @@ from retrieval_plugins import SentenceWindowPlugin
 def ollama_generate(prompt: str, temperature: float = 0.1) -> str:
     resp = requests.post(
         "http://localhost:11434/api/generate",
-        json={"model": "qwen2.5:7b", "prompt": prompt, "stream": False,
+        json={"model": "qwen3", "prompt": prompt, "stream": False,
               "options": {"temperature": temperature, "num_ctx": 8192}}
     )
     resp.raise_for_status()

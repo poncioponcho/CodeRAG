@@ -1,3 +1,5 @@
+"""批量评估模块：支持大候选池、HyDE、去噪等消融试验"""
+
 import json
 import time
 import subprocess
@@ -8,8 +10,10 @@ from langchain_community.embeddings import HuggingFaceEmbeddings
 import requests
 
 from langchain_core.documents import Document
-from retrieval_core import split_by_headings, HybridRetriever, RerankRetriever
+from retrieval_core import split_by_headings, HybridRetriever, HyDERetriever, RerankRetriever
 from retrieval_plugins import SentenceWindowPlugin, ContextExpansionPlugin, ContextDenoisePlugin
+from hyde_module import HyDEGenerator
+from question_classifier import QuestionClassifier
 
 
 def get_cpu_temp() -> float:
@@ -54,7 +58,7 @@ def ollama_generate(prompt: str, temperature: float = 0.1) -> str:
     resp = requests.post(
         "http://localhost:11434/api/generate",
         json={
-            "model": "qwen2.5:7b",
+            "model": "qwen3",
             "prompt": prompt,
             "stream": False,
             "options": {"temperature": temperature, "num_ctx": 8192}
@@ -85,25 +89,17 @@ def normalize_text(text: str) -> str:
 
 
 def compute_coverage(answer_points: list, context: str) -> tuple:
-    """返回 (命中数, 总数, 命中详情列表)
-    双重匹配策略：
-    1. 模糊匹配（去除空格/标点）：处理公式类差异
-    2. 原始前10字符匹配：处理中英文表述差异的 fallback
-    """
+    """返回 (命中数, 总数, 命中详情列表)"""
     norm_context = normalize_text(context)
     ctx_lower = context.lower()
     found = 0
     details = []
     for p in answer_points:
-        # 策略1：模糊匹配
         norm_p = normalize_text(p)
         key = norm_p[:15] if len(norm_p) >= 15 else norm_p
         hit = (len(key) >= 5 and key in norm_context) or (len(key) < 5 and norm_p[:10] in norm_context)
-
-        # 策略2：原始前10字符 fallback
         if not hit:
             hit = p.lower()[:10] in ctx_lower
-
         if hit:
             found += 1
         details.append({"point": p[:60], "hit": hit})
@@ -129,12 +125,10 @@ def load_test_set(path: str = "test_set_clean.json"):
             print(f"⚠️ 跳过条目 #{idx}: answer_points 格式错误")
             continue
 
-        # 过滤乱码/无意义条目：如果所有要点都是空或纯乱码，丢弃
         valid_pts = []
         for p in pts:
             if not p or len(p.strip()) < 3:
                 continue
-            # 如果字符串中超过50%是不可打印字符或乱码特征，过滤
             printable_ratio = sum(1 for c in p if c.isprintable() or c.isspace()) / max(len(p), 1)
             if printable_ratio < 0.7:
                 continue
@@ -165,33 +159,15 @@ def load_docs_and_chunks(docs_dir: str = "docs"):
     return chunks
 
 
-class HyDERetrieverWrapper:
-    """包装 HybridRetriever，在调用前自动生成 HyDE 假设答案。"""
-    def __init__(self, hybrid_retriever, generate_hyde_fn):
-        self.hybrid = hybrid_retriever
-        self.generate_hyde = generate_hyde_fn
-        self._cache = {}
-
-    def invoke(self, query: str):
-        if query not in self._cache:
-            self._cache[query] = self.generate_hyde(query)
-        hyde = self._cache[query]
-        return self.hybrid.invoke(query, hyde_query=hyde)
-
-
-def build_retriever(vectorstore, chunks, config_name: str, embedding_model=None):
-    """根据配置名构建不同的检索器。"""
-    # 大候选池：vec_k=40, bm25_k=40, rerank_k=10
-    VEC_K = 40
-    BM25_K = 40
-    RERANK_K = 10
+def build_retriever(vectorstore, chunks, config_name: str, embedding_model=None, 
+                   vec_k=40, bm25_k=40, denoise_threshold=0.55, max_sentences=8):
+    """根据配置名构建不同的检索器，支持参数化配置"""
+    
+    hybrid = HybridRetriever(vectorstore, chunks, vec_k=vec_k, bm25_k=bm25_k)
+    plugins = []
 
     if config_name == "baseline_faiss":
-        return vectorstore.as_retriever(search_kwargs={"k": 20})
-
-    # Hybrid 基础配置
-    hybrid = HybridRetriever(vectorstore, chunks, vec_k=VEC_K, bm25_k=BM25_K)
-    plugins = []
+        return vectorstore.as_retriever(search_kwargs={"k": vec_k})
 
     if config_name == "hybrid_rerank":
         pass
@@ -203,27 +179,27 @@ def build_retriever(vectorstore, chunks, config_name: str, embedding_model=None)
         plugins.append(SentenceWindowPlugin(chunks, window_chunks=1))
         plugins.append(ContextExpansionPlugin(chunks, max_extra_chunks=2))
     elif config_name == "+denoise":
-        plugins.append(ContextDenoisePlugin(embedding_model, similarity_threshold=0.55, max_sentences=8))
+        plugins.append(ContextDenoisePlugin(embedding_model, similarity_threshold=denoise_threshold, max_sentences=max_sentences))
     elif config_name == "+window_denoise":
         plugins.append(SentenceWindowPlugin(chunks, window_chunks=1))
-        plugins.append(ContextDenoisePlugin(embedding_model, similarity_threshold=0.55, max_sentences=8))
+        plugins.append(ContextDenoisePlugin(embedding_model, similarity_threshold=denoise_threshold, max_sentences=max_sentences))
     elif config_name == "+hyde":
-        # HyDE 包装 HybridRetriever
-        hybrid = HyDERetrieverWrapper(hybrid, generate_hyde)
+        hybrid = HyDERetriever(hybrid, HyDEGenerator())
     elif config_name == "+hyde_window":
-        hybrid = HyDERetrieverWrapper(hybrid, generate_hyde)
+        hybrid = HyDERetriever(hybrid, HyDEGenerator())
         plugins.append(SentenceWindowPlugin(chunks, window_chunks=1))
     elif config_name == "+hyde_window_denoise":
-        hybrid = HyDERetrieverWrapper(hybrid, generate_hyde)
+        hybrid = HyDERetriever(hybrid, HyDEGenerator())
         plugins.append(SentenceWindowPlugin(chunks, window_chunks=1))
-        plugins.append(ContextDenoisePlugin(embedding_model, similarity_threshold=0.55, max_sentences=8))
+        plugins.append(ContextDenoisePlugin(embedding_model, similarity_threshold=denoise_threshold, max_sentences=max_sentences))
     else:
         raise ValueError(f"未知配置: {config_name}")
 
-    return RerankRetriever(hybrid, k=RERANK_K, plugins=plugins)
+    return RerankRetriever(hybrid, k=10, plugins=plugins)
 
 
-def evaluate_one_config(test_set, retriever, config_name: str):
+def evaluate_one_config(test_set, retriever, config_name: str, classify_questions=False):
+    """评估单个配置"""
     print(f"\n{'='*60}")
     print(f"▶ 配置: {config_name}")
     print(f"{'='*60}")
@@ -238,6 +214,9 @@ def evaluate_one_config(test_set, retriever, config_name: str):
     results = []
     total_retrieve_ms = 0
     total_generate_ms = 0
+    
+    # 问题分类器（可选）
+    classifier = QuestionClassifier() if classify_questions else None
 
     for i in range(0, len(test_set), EVAL_BATCH_SIZE):
         batch = test_set[i:i + EVAL_BATCH_SIZE]
@@ -253,11 +232,19 @@ def evaluate_one_config(test_set, retriever, config_name: str):
             total_retrieve_ms += retrieve_ms
 
             context = "\n\n".join([d.page_content for d in docs])
+            
+            # 问题分类（可选）
+            question_type = None
+            if classifier:
+                classification = classifier.classify(item["question"])
+                question_type = classification["type"]
+
             batch_data.append({
                 "item": item,
                 "docs": docs,
                 "context": context,
-                "retrieve_ms": retrieve_ms
+                "retrieve_ms": retrieve_ms,
+                "question_type": question_type
             })
 
         # 构建评分 Prompt
@@ -304,7 +291,6 @@ def evaluate_one_config(test_set, retriever, config_name: str):
             for j, data in enumerate(batch_data):
                 score = scores[j] if j < len(scores) else {"accuracy": 0, "completeness": 0, "relevance": 0, "comment": "解析失败"}
 
-                # 新版模糊匹配覆盖率
                 points_found, total_points, pt_details = compute_coverage(
                     data["item"]["answer_points"], data["context"]
                 )
@@ -312,6 +298,7 @@ def evaluate_one_config(test_set, retriever, config_name: str):
                 results.append({
                     "question": data["item"]["question"],
                     "source": data["item"]["source"],
+                    "question_type": data.get("question_type"),
                     "points_found": points_found,
                     "total_points": total_points,
                     "point_details": pt_details,
@@ -330,6 +317,7 @@ def evaluate_one_config(test_set, retriever, config_name: str):
                 results.append({
                     "question": data["item"]["question"],
                     "source": data["item"]["source"],
+                    "question_type": data.get("question_type"),
                     "points_found": 0,
                     "total_points": len(data["item"]["answer_points"]),
                     "point_details": [],
@@ -353,6 +341,19 @@ def evaluate_one_config(test_set, retriever, config_name: str):
     avg_retrieve = total_retrieve_ms / n if n > 0 else 0
     avg_generate = total_generate_ms / n if n > 0 else 0
 
+    # 按问题类型统计（如果有分类）
+    type_stats = {}
+    if classify_questions:
+        for r in results:
+            q_type = r["question_type"] or "unknown"
+            if q_type not in type_stats:
+                type_stats[q_type] = {"count": 0, "total_coverage": 0.0}
+            type_stats[q_type]["count"] += 1
+            type_stats[q_type]["total_coverage"] += r["points_found"] / r["total_points"]
+        
+        for q_type in type_stats:
+            type_stats[q_type]["avg_coverage"] = type_stats[q_type]["total_coverage"] / type_stats[q_type]["count"]
+
     summary = {
         "config": config_name,
         "total_queries": n,
@@ -362,18 +363,119 @@ def evaluate_one_config(test_set, retriever, config_name: str):
         "avg_relevance": round(avg_rel, 2),
         "avg_retrieve_ms": round(avg_retrieve, 1),
         "avg_generate_ms": round(avg_generate, 1),
+        "type_stats": type_stats,
         "details": results,
     }
 
     print(f"\n  📊 结果: 覆盖率={avg_points:.1%}, 准确性={avg_acc:.1f}, 完整性={avg_comp:.1f}, 相关性={avg_rel:.1f}, 检索延迟={avg_retrieve:.1f}ms")
+    if type_stats:
+        for q_type, stats in type_stats.items():
+            print(f"    [{q_type}] 样本数={stats['count']}, 覆盖率={stats['avg_coverage']:.1%}")
     return summary
+
+
+def ablation_candidate_pool(test_set, vectorstore, chunks, embedding):
+    """大候选池消融试验"""
+    print("\n" + "="*70)
+    print("🔥 消融试验：大候选池参数测试")
+    print("="*70)
+    
+    params = [(20, 20), (40, 40), (60, 60), (40, 20), (20, 40)]
+    results = []
+    
+    for vec_k, bm25_k in params:
+        config_name = f"vec_k={vec_k}_bm25_k={bm25_k}"
+        retriever = build_retriever(vectorstore, chunks, "hybrid_rerank", embedding, 
+                                   vec_k=vec_k, bm25_k=bm25_k)
+        report = evaluate_one_config(test_set, retriever, config_name)
+        report["vec_k"] = vec_k
+        report["bm25_k"] = bm25_k
+        results.append(report)
+    
+    # 输出对比
+    print("\n" + "-"*70)
+    print("📋 大候选池参数对比")
+    print("-"*70)
+    print(f"{'配置':<20} {'覆盖率':>8} {'检索延迟':>10}")
+    print("-"*70)
+    for r in results:
+        print(f"{r['config']:<20} {r['avg_points_coverage']:>7.1%} {r['avg_retrieve_ms']:>9.1f}ms")
+    
+    return {"experiment": "candidate_pool", "results": results}
+
+
+def ablation_hyde(test_set, vectorstore, chunks, embedding):
+    """HyDE消融试验"""
+    print("\n" + "="*70)
+    print("🔥 消融试验：HyDE效果对比")
+    print("="*70)
+    
+    configs = [
+        ("hybrid_rerank", "无HyDE"),
+        ("+hyde", "有HyDE"),
+        ("+hyde_window", "HyDE+窗口"),
+        ("+hyde_window_denoise", "HyDE+窗口+去噪"),
+    ]
+    results = []
+    
+    for config_name, desc in configs:
+        retriever = build_retriever(vectorstore, chunks, config_name, embedding)
+        report = evaluate_one_config(test_set, retriever, config_name, classify_questions=True)
+        report["description"] = desc
+        results.append(report)
+    
+    # 输出对比
+    print("\n" + "-"*70)
+    print("📋 HyDE配置对比")
+    print("-"*70)
+    print(f"{'配置':<25} {'覆盖率':>8} {'检索延迟':>10} {'准确性':>8}")
+    print("-"*70)
+    for r in results:
+        print(f"{r['config']:<25} {r['avg_points_coverage']:>7.1%} {r['avg_retrieve_ms']:>9.1f}ms {r['avg_accuracy']:>7.1f}")
+    
+    return {"experiment": "hyde", "results": results}
+
+
+def ablation_denoise(test_set, vectorstore, chunks, embedding):
+    """去噪消融试验"""
+    print("\n" + "="*70)
+    print("🔥 消融试验：去噪参数测试")
+    print("="*70)
+    
+    thresholds = [0.5, 0.6, 0.7]
+    max_sentences_list = [3, 5, 7, 10]
+    results = []
+    
+    for threshold in thresholds:
+        for max_sentences in max_sentences_list:
+            config_name = f"denoise_t{threshold}_s{max_sentences}"
+            retriever = build_retriever(vectorstore, chunks, "+denoise", embedding,
+                                       denoise_threshold=threshold, max_sentences=max_sentences)
+            report = evaluate_one_config(test_set, retriever, config_name)
+            report["threshold"] = threshold
+            report["max_sentences"] = max_sentences
+            results.append(report)
+    
+    # 输出对比（按阈值分组）
+    print("\n" + "-"*70)
+    print("📋 去噪参数对比（按阈值分组）")
+    print("-"*70)
+    for threshold in thresholds:
+        print(f"\n阈值={threshold}:")
+        print(f"{'保留句数':<10} {'覆盖率':>8}")
+        for r in results:
+            if r["threshold"] == threshold:
+                print(f"{r['max_sentences']:<10} {r['avg_points_coverage']:>7.1%}")
+    
+    return {"experiment": "denoise", "results": results}
 
 
 def evaluate_batch():
     print("加载 Embedding 模型与向量库...")
     embedding = HuggingFaceEmbeddings(
-        model_name="all-MiniLM-L6-v2",
-        model_kwargs={"local_files_only": True}
+        model_name="BAAI/bge-small-zh",
+        model_kwargs={"local_files_only": False},
+        encode_kwargs={"normalize_embeddings": True}
     )
     vectorstore = FAISS.load_local(
         "./faiss_index",
@@ -391,45 +493,37 @@ def evaluate_batch():
         return
     print(f"有效测试条目: {len(test_set)}")
 
-    # 要对比的检索配置
-    configs = [
-        "baseline_faiss",
-        "hybrid_rerank",
-        "+sentence_window",
-        "+denoise",
-        "+window_denoise",
-        "+hyde",
-        "+hyde_window",
-        "+hyde_window_denoise",
-    ]
+    # 执行消融试验
+    all_reports = {}
+    
+    # 试验1: 大候选池
+    pool_report = ablation_candidate_pool(test_set, vectorstore, chunks, embedding)
+    all_reports["candidate_pool"] = pool_report
+    
+    # 试验2: HyDE
+    hyde_report = ablation_hyde(test_set, vectorstore, chunks, embedding)
+    all_reports["hyde"] = hyde_report
+    
+    # 试验3: 去噪
+    denoise_report = ablation_denoise(test_set, vectorstore, chunks, embedding)
+    all_reports["denoise"] = denoise_report
 
-    all_reports = []
-    for cfg in configs:
-        retriever = build_retriever(vectorstore, chunks, cfg, embedding_model=embedding)
-        report = evaluate_one_config(test_set, retriever, cfg)
-        all_reports.append(report)
-
-    # 汇总对比
-    print(f"\n{'='*70}")
-    print("📋 全部配置对比汇总")
-    print(f"{'='*70}")
-    print(f"{'配置':<28} {'覆盖率':>8} {'准确性':>8} {'完整性':>8} {'相关性':>8} {'检索ms':>10}")
-    print("-" * 70)
-    for r in all_reports:
-        print(f"{r['config']:<28} {r['avg_points_coverage']:>7.1%} {r['avg_accuracy']:>7.1f} {r['avg_completeness']:>7.1f} {r['avg_relevance']:>7.1f} {r['avg_retrieve_ms']:>9.1f}")
-
+    # 保存完整报告
     final_report = {
-        "configs": all_reports,
-        "summary": {
-            "baseline_coverage": all_reports[0]["avg_points_coverage"],
-            "best_coverage": max(r["avg_points_coverage"] for r in all_reports),
-            "best_config": max(all_reports, key=lambda x: x["avg_points_coverage"])["config"],
-        }
+        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "model": "qwen3",
+        "embedding": "bge-small-zh",
+        "test_set_size": len(test_set),
+        "experiments": all_reports
     }
-    with open("evaluation_report.json", "w", encoding="utf-8") as f:
+    
+    with open("ablation_report.json", "w", encoding="utf-8") as f:
         json.dump(final_report, f, indent=2, ensure_ascii=False)
 
-    print(f"\n报告已保存: evaluation_report.json")
+    print(f"\n{'='*70}")
+    print("📊 消融试验完成！")
+    print(f"报告已保存: ablation_report.json")
+    print(f"{'='*70}")
 
 
 if __name__ == "__main__":

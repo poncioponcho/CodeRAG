@@ -63,7 +63,7 @@ def build_vectorstore(chunks):
     return vectorstore
 
 
-def ollama_generate(prompt: str, model: str = "qwen2.5:7b", temperature: float = 0.1) -> str:
+def ollama_generate(prompt: str, model: str = "qwen3", temperature: float = 0.1) -> str:
     resp = requests.post(
         "http://localhost:11434/api/generate",
         json={
