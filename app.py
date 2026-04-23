@@ -9,8 +9,9 @@ from langchain_community.vectorstores import FAISS
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_core.documents import Document
 import requests
-from retrieval_core import split_by_headings, HybridRetriever, RerankRetriever
-from retrieval_plugins import SentenceWindowPlugin, ContextExpansionPlugin
+from retrieval_core import split_by_headings, HybridRetriever, HyDERetriever, RerankRetriever
+from retrieval_plugins import SentenceWindowPlugin, ContextExpansionPlugin, ContextDenoisePlugin
+from hyde_module import HyDEGenerator
 
 
 # ========== Streamlit 配置 ==========
@@ -22,8 +23,9 @@ st.caption("基于 Ollama + FAISS + BM25 + CrossEncoder，零 API 费用，全�
 @st.cache_resource
 def get_embedding():
     return HuggingFaceEmbeddings(
-        model_name="all-MiniLM-L6-v2",
-        model_kwargs={"local_files_only": True}
+        model_name="BAAI/bge-small-zh",
+        model_kwargs={"local_files_only": False},
+        encode_kwargs={"normalize_embeddings": True}
     )
 
 
@@ -41,8 +43,8 @@ def init_vectorstore():
 def ollama_generate(prompt: str, temperature: float = 0.1) -> str:
     resp = requests.post(
         "http://localhost:11434/api/generate",
-        json={"model": "qwen2.5:7b", "prompt": prompt, "stream": False,
-              "options": {"temperature": temperature, "num_ctx": 4096}}
+        json={"model": "qwen3", "prompt": prompt, "stream": False,
+              "options": {"temperature": temperature, "num_ctx": 8192}}
     )
     resp.raise_for_status()
     return resp.json()["response"]
@@ -134,22 +136,31 @@ with st.sidebar:
             vectorstore = FAISS.from_documents(chunks, embedding)
             vectorstore.save_local("./faiss_index")
 
-            # 缓存 chunks 到 session_state，供 HybridRetriever 使用
             st.session_state.all_chunks = chunks
 
             st.success(f"已导入 {len(docs)} 个文件，切分为 {len(chunks)} 个 chunk")
             st.rerun()
 
     st.divider()
+    
+    # 检索配置
+    st.header("⚙️ 检索配置")
+    use_hyde = st.checkbox("启用 HyDE（自动识别抽象问题）", value=True)
+    use_denoise = st.checkbox("启用上下文去噪", value=True)
+    
+    st.divider()
+    
     db_exists = os.path.exists("./faiss_index/index.faiss")
     doc_count = len(list(Path("docs").glob("*"))) if Path("docs").exists() else 0
     st.markdown(f"""
     **当前状态**
     - 向量库：{'已加载' if db_exists else '未创建'}
     - 文档数：{doc_count}
-    - LLM：qwen2.5:7b (Ollama)
+    - LLM：qwen3 (Ollama)
+    - Embedding：bge-small-zh
     - 检索：FAISS 向量 + BM25 关键词混合召回
     - 精排：CrossEncoder (ms-marco-MiniLM-L-6-v2)
+    - HyDE：{'已启用' if use_hyde else '已禁用'}
     """)
 
 
@@ -159,9 +170,7 @@ vectorstore = init_vectorstore()
 if not vectorstore:
     st.warning("请先上传笔记并在侧边栏点击「导入并重建向量库」")
 else:
-    # 加载 chunk 列表（如果 session_state 中没有，则从文件重新读取）
     if "all_chunks" not in st.session_state:
-        # 从 docs 重建 chunk 列表（与建索引时一致）
         all_docs = []
         for p in Path("docs").glob("*"):
             if p.suffix.lower() in [".txt", ".md"]:
@@ -174,19 +183,35 @@ else:
             chunks.extend(split_by_headings(doc.page_content, doc.metadata["source"]))
         st.session_state.all_chunks = chunks
 
-    # 大候选池 + 句子窗口插件（评估验证后的最优配置）
+    embedding = get_embedding()
+    
+    # 构建检索器
     hybrid_retriever = HybridRetriever(vectorstore, st.session_state.all_chunks, vec_k=40, bm25_k=40)
-    sentence_window = SentenceWindowPlugin(st.session_state.all_chunks, window_chunks=1)
-    rerank_retriever = RerankRetriever(hybrid_retriever, k=10, plugins=[sentence_window])
+    
+    # 可选：添加HyDE增强
+    if use_hyde:
+        hyde_generator = HyDEGenerator()
+        base_retriever = HyDERetriever(hybrid_retriever, hyde_generator)
+    else:
+        base_retriever = hybrid_retriever
+    
+    # 构建插件列表
+    plugins = [SentenceWindowPlugin(st.session_state.all_chunks, window_chunks=1)]
+    if use_denoise:
+        plugins.append(ContextDenoisePlugin(embedding, similarity_threshold=0.55, max_sentences=8))
+    
+    rerank_retriever = RerankRetriever(base_retriever, k=10, plugins=plugins)
 
     if "history" not in st.session_state:
         st.session_state.history = []
 
-    for q, a, sources in st.session_state.history:
+    for q, a, sources, hyde_info in st.session_state.history:
         with st.chat_message("user"):
             st.write(q)
         with st.chat_message("assistant"):
             st.write(a)
+            if hyde_info.get("used"):
+                st.caption(f"✨ 使用 HyDE（问题类型: {hyde_info.get('classification', {}).get('type', 'unknown')}）")
             with st.expander("查看引用来源（Rerank 后 top-3）"):
                 for s in sources:
                     st.markdown(s)
@@ -198,7 +223,13 @@ else:
 
         with st.spinner("Hybrid检索 + Rerank精排 + 生成回答..."):
             rewritten, note, _ = rewrite_query(query)
-            docs = rerank_retriever.invoke(rewritten)
+            
+            # 执行检索
+            if use_hyde and hasattr(rerank_retriever, 'invoke_with_hyde_info'):
+                docs, hyde_info = rerank_retriever.invoke_with_hyde_info(rewritten)
+            else:
+                docs = rerank_retriever.invoke(rewritten)
+                hyde_info = {}
 
             context = "\n\n".join([
                 f"[{d.metadata['source']}] {d.page_content}"
@@ -207,7 +238,7 @@ else:
 
             history_str = "\n".join([
                 f"Q: {q}\nA: {a}"
-                for q, a, _ in st.session_state.history[-2:]
+                for q, a, _, _ in st.session_state.history[-2:]
             ])
 
             prompt = f"""你是技术面试助手。基于以下参考资料用中文回答问题。
@@ -228,6 +259,8 @@ else:
         with st.chat_message("assistant"):
             if note:
                 st.caption(f"🔍 {note} 检索词：`{rewritten}`")
+            if hyde_info.get("used"):
+                st.caption(f"✨ 使用 HyDE（问题类型: {hyde_info.get('classification', {}).get('type', 'unknown')}，置信度: {hyde_info.get('classification', {}).get('confidence', 0)}）")
             st.write(answer)
             sources = [
                 f"**{d.metadata['source']}**：{d.page_content[:200]}..."
@@ -237,4 +270,4 @@ else:
                 for s in sources:
                     st.markdown(s)
 
-        st.session_state.history.append((query, answer, sources))
+        st.session_state.history.append((query, answer, sources, hyde_info))

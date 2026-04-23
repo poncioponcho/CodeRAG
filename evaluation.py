@@ -9,7 +9,7 @@ import requests
 def ollama_generate(prompt: str) -> str:
     resp = requests.post(
         "http://localhost:11434/api/generate",
-        json={"model": "qwen2.5:7b", "prompt": prompt, "stream": False,
+        json={"model": "qwen3", "prompt": prompt, "stream": False,
               "options": {"temperature": 0.1}}
     )
     return resp.json()["response"]
