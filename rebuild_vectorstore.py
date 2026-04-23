@@ -45,7 +45,13 @@ def main():
     vectorstore.save_local("./faiss_index")
     
     print("\n✅ 向量库重建完成！")
+    return chunks
 
 
 if __name__ == "__main__":
-    main()
+    chunks = main()
+    # 保存chunks到文件
+    import pickle
+    with open("./chunks.pkl", "wb") as f:
+        pickle.dump(chunks, f)
+    print("chunks.pkl 已保存")

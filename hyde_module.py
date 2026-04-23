@@ -3,24 +3,25 @@
 核心功能：
 1. 仅对抽象问题自动启用HyDE
 2. 对具体技术问题直接跳过HyDE处理
-3. 支持缓存机制避免重复计算
+3. 支持智能缓存机制避免重复计算
 4. 集成问题类型分类器
 """
 
 import requests
 import time
 from question_classifier import get_classifier
+from cache_manager import get_cache_manager
 
 
 class HyDEGenerator:
     """HyDE假设答案生成器"""
     
-    def __init__(self, model: str = "qwen3", temperature: float = 0.3):
+    def __init__(self, model: str = "qwen3", temperature: float = 0.3, cache_type="memory"):
         self.model = model
         self.temperature = temperature
         self.classifier = get_classifier()
-        self._cache = {}
-        self._cache_timeout = 3600  # 缓存过期时间（秒）
+        self.cache_manager = get_cache_manager(cache_type=cache_type)
+        self.model_version = "v1"  # 模型版本，用于缓存键
     
     def generate(self, query: str, force_hyde: bool = False) -> tuple:
         """
@@ -40,22 +41,28 @@ class HyDEGenerator:
         if not should_use_hyde:
             return query, False, classification
         
+        # 生成缓存键
+        cache_key = self._generate_cache_key(query, classification["type"])
+        
         # 检查缓存
-        cache_key = query[:200]
-        now = time.time()
-        if cache_key in self._cache:
-            cached_hyde, cache_time = self._cache[cache_key]
-            if now - cache_time < self._cache_timeout:
-                print(f"[HyDE] 使用缓存: {query[:30]}...")
-                return cached_hyde, True, classification
+        cached_result = self.cache_manager.get(cache_key)
+        if cached_result:
+            print(f"[HyDE] 使用缓存: {query[:30]}...")
+            return cached_result, True, classification
         
         # 生成假设答案
         hyde_text = self._generate_hypothetical_answer(query)
         
         # 更新缓存
-        self._cache[cache_key] = (hyde_text, now)
+        self.cache_manager.set(cache_key, hyde_text)
         
         return hyde_text, True, classification
+    
+    def _generate_cache_key(self, query, question_type):
+        """生成缓存键"""
+        import hashlib
+        key_str = f"hyde_{query}_{question_type}_{self.model}_{self.model_version}"
+        return hashlib.md5(key_str.encode()).hexdigest()
     
     def _generate_hypothetical_answer(self, query: str) -> str:
         """生成假设性答案的核心逻辑"""
@@ -92,13 +99,15 @@ class HyDEGenerator:
     
     def clear_cache(self):
         """清空缓存"""
-        self._cache.clear()
+        self.cache_manager.clear()
     
     def get_cache_stats(self) -> dict:
         """获取缓存统计信息"""
+        stats = self.cache_manager.get_stats()
         return {
-            "cache_size": len(self._cache),
-            "cache_timeout": self._cache_timeout
+            **stats,
+            "model": self.model,
+            "model_version": self.model_version
         }
 
 

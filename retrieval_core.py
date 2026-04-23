@@ -8,6 +8,7 @@ import jieba
 from rank_bm25 import BM25Okapi
 from langchain_core.documents import Document
 from sentence_transformers import CrossEncoder
+from parallel_processor import get_parallel_processor
 
 
 # ========== 结构化切分 ==========
@@ -100,10 +101,11 @@ class HybridRetriever:
 class HyDERetriever:
     """集成HyDE的检索器：自动根据问题类型决定是否使用HyDE"""
     
-    def __init__(self, hybrid_retriever, hyde_generator=None):
+    def __init__(self, hybrid_retriever, hyde_generator=None, max_workers=4):
         self.hybrid = hybrid_retriever
         self.hyde_generator = hyde_generator
         self._hyde_info = {}  # 存储最近一次HyDE信息
+        self.parallel_processor = get_parallel_processor(max_workers=max_workers)
     
     def invoke(self, query: str, force_hyde: bool = False):
         """执行检索，自动决定是否使用HyDE"""
@@ -112,10 +114,40 @@ class HyDERetriever:
         classification = None
         
         if self.hyde_generator:
-            hyde_text, used_hyde, classification = self.hyde_generator.generate(
-                query, force_hyde=force_hyde
-            )
+            # 并行执行问题分类和HyDE生成
+            import asyncio
+            
+            # 定义处理器
+            def classify_task(query):
+                """分类任务"""
+                if hasattr(self.hyde_generator.classifier, 'classify'):
+                    return self.hyde_generator.classifier.classify(query)
+                return {"type": "concrete", "should_use_hyde": False}
+            
+            def hyde_generate_task(query, classification, force_hyde):
+                """HyDE生成任务"""
+                should_use_hyde = force_hyde or classification.get("should_use_hyde", False)
+                if should_use_hyde:
+                    hyde_text, used, _ = self.hyde_generator.generate(query, force_hyde=force_hyde)
+                    return hyde_text, used
+                return query, False
+            
+            # 第一步：并行执行分类
+            loop = asyncio.get_event_loop()
+            processors = {"classifier": lambda q: classify_task(q)}
+            results = loop.run_until_complete(self.parallel_processor.process_query(query, processors))
+            
+            classification = results.get("classifier", {"type": "concrete", "should_use_hyde": False})
+            should_use_hyde = force_hyde or classification.get("should_use_hyde", False)
+            
+            # 第二步：生成HyDE（如果需要）
+            if should_use_hyde:
+                hyde_text, used_hyde = hyde_generate_task(query, classification, force_hyde)
+            else:
+                hyde_text = query
+                used_hyde = False
         
+        # 执行检索
         docs = self.hybrid.invoke(query, hyde_query=hyde_text)
         
         # 保存HyDE信息供后续使用
