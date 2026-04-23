@@ -1,6 +1,5 @@
 """并行处理模块：实现任务并行和异步处理，提升系统吞吐量。"""
 
-import asyncio
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import time
 
@@ -17,9 +16,8 @@ class ParallelProcessor:
         """
         self.max_workers = max_workers
         self.executor = ThreadPoolExecutor(max_workers=max_workers)
-        self.loop = asyncio.get_event_loop()
     
-    async def process_query(self, query, processors=None):
+    def process_query(self, query, processors=None):
         """
         并行处理查询
         
@@ -52,7 +50,7 @@ class ParallelProcessor:
         
         return results
     
-    async def process_batch(self, queries, processor):
+    def process_batch(self, queries, processor):
         """
         批处理多个查询
         
@@ -91,46 +89,8 @@ class ParallelProcessor:
         }
 
 
-class AsyncProcessor:
-    """异步处理器"""
-    
-    def __init__(self):
-        """初始化异步处理器"""
-        self.loop = asyncio.get_event_loop()
-    
-    async def process_async(self, coros):
-        """
-        并行执行异步协程
-        
-        Args:
-            coros: 协程列表
-        
-        Returns:
-            list: 协程执行结果
-        """
-        return await asyncio.gather(*coros, return_exceptions=True)
-    
-    async def process_with_timeout(self, coro, timeout=30):
-        """
-        带超时的异步处理
-        
-        Args:
-            coro: 协程
-            timeout: 超时时间（秒）
-        
-        Returns:
-            协程执行结果或超时异常
-        """
-        try:
-            return await asyncio.wait_for(coro, timeout=timeout)
-        except asyncio.TimeoutError:
-            print(f"[AsyncProcessor] 处理超时: {timeout}秒")
-            return None
-
-
 # 全局并行处理器实例
 _parallel_processor = None
-_async_processor = None
 
 def get_parallel_processor(max_workers=4):
     """获取并行处理器单例"""
@@ -138,13 +98,6 @@ def get_parallel_processor(max_workers=4):
     if _parallel_processor is None:
         _parallel_processor = ParallelProcessor(max_workers=max_workers)
     return _parallel_processor
-
-def get_async_processor():
-    """获取异步处理器单例"""
-    global _async_processor
-    if _async_processor is None:
-        _async_processor = AsyncProcessor()
-    return _async_processor
 
 
 # 示例处理器
@@ -179,8 +132,7 @@ if __name__ == "__main__":
     
     # 测试并行处理
     start_time = time.time()
-    loop = asyncio.get_event_loop()
-    results = loop.run_until_complete(processor.process_query(test_query, processors))
+    results = processor.process_query(test_query, processors)
     end_time = time.time()
     
     print(f"并行处理时间: {end_time - start_time:.3f}秒")
@@ -195,7 +147,7 @@ if __name__ == "__main__":
     ]
     
     start_time = time.time()
-    batch_results = loop.run_until_complete(processor.process_batch(test_queries, example_classifier))
+    batch_results = processor.process_batch(test_queries, example_classifier)
     end_time = time.time()
     
     print(f"\n批处理时间: {end_time - start_time:.3f}秒")

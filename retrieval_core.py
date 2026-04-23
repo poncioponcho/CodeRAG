@@ -114,9 +114,6 @@ class HyDERetriever:
         classification = None
         
         if self.hyde_generator:
-            # 并行执行问题分类和HyDE生成
-            import asyncio
-            
             # 定义处理器
             def classify_task(query):
                 """分类任务"""
@@ -132,10 +129,9 @@ class HyDERetriever:
                     return hyde_text, used
                 return query, False
             
-            # 第一步：并行执行分类
-            loop = asyncio.get_event_loop()
+            # 第一步：执行分类（使用同步方法）
             processors = {"classifier": lambda q: classify_task(q)}
-            results = loop.run_until_complete(self.parallel_processor.process_query(query, processors))
+            results = self.parallel_processor.process_query(query, processors)
             
             classification = results.get("classifier", {"type": "concrete", "should_use_hyde": False})
             should_use_hyde = force_hyde or classification.get("should_use_hyde", False)
