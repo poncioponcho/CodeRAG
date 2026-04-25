@@ -1,0 +1,206 @@
+/opt/anaconda3/lib/python3.13/site-packages/jieba/_compat.py:18: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+/Users/seyonmacbook/Desktop/电子书/26春招/CodeRAG/evaluate_batch.py:475: LangChainDeprecationWarning: The class `HuggingFaceEmbeddings` was deprecated in LangChain 0.2.2 and will be removed in 1.0. An updated version of the class exists in the `langchain-huggingface package and should be used instead. To use it run `pip install -U `langchain-huggingface` and import as `from `langchain_huggingface import HuggingFaceEmbeddings``.
+  embedding = HuggingFaceEmbeddings(
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+加载 Embedding 模型与向量库...
+Loading weights:   0%|          | 0/71 [00:00<?, ?it/s]Loading weights: 100%|██████████| 71/71 [00:00<00:00, 31004.23it/s]
+[1mBertModel LOAD REPORT[0m from: BAAI/bge-small-zh
+Key                     | Status     |  | 
+------------------------+------------+--+-
+embeddings.position_ids | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+Building prefix dict from the default dictionary ...
+Loading model from cache /var/folders/w8/nc6rj3f11jd_ttk_hc2yxz7h0000gn/T/jieba.cache
+Loading model cost 0.226 seconds.
+Prefix dict has been built successfully.
+重建文档 chunks...
+共 899 个 chunks
+有效测试条目: 13
+
+======================================================================
+🔥 消融试验：大候选池参数测试
+======================================================================
+Loading weights:   0%|          | 0/105 [00:00<?, ?it/s]Loading weights: 100%|██████████| 105/105 [00:00<00:00, 8265.03it/s]
+[1mBertForSequenceClassification LOAD REPORT[0m from: cross-encoder/ms-marco-MiniLM-L-6-v2
+Key                          | Status     |  | 
+-----------------------------+------------+--+-
+bert.embeddings.position_ids | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+
+============================================================
+▶ 配置: vec_k=20_bm25_k=20
+============================================================
+测试样本: 13, 批大小: 5, 预计 LLM 调用: 3
+
+[1/3] 评估 5 个问题...
+  ✓ 评分完成，耗时 68.9s
+  😴 休息 34s...
+
+[2/3] 评估 5 个问题...
+  ✓ 评分完成，耗时 52.7s
+  😴 休息 26s...
+
+[3/3] 评估 3 个问题...
+  ✓ 评分完成，耗时 50.2s
+
+  📊 结果: 覆盖率=50.0%, 准确性=3.2, 完整性=2.8, 相关性=3.8, 检索延迟=677.0ms
+Loading weights:   0%|          | 0/105 [00:00<?, ?it/s]Loading weights: 100%|██████████| 105/105 [00:00<00:00, 8455.45it/s]
+[1mBertForSequenceClassification LOAD REPORT[0m from: cross-encoder/ms-marco-MiniLM-L-6-v2
+Key                          | Status     |  | 
+-----------------------------+------------+--+-
+bert.embeddings.position_ids | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+
+============================================================
+▶ 配置: vec_k=40_bm25_k=40
+============================================================
+测试样本: 13, 批大小: 5, 预计 LLM 调用: 3
+
+[1/3] 评估 5 个问题...
+  ✓ 评分完成，耗时 78.3s
+  😴 休息 39s...
+
+[2/3] 评估 5 个问题...
+  ✓ 评分完成，耗时 1024.4s
+  😴 休息 512s...
+
+[3/3] 评估 3 个问题...
+  ✓ 评分完成，耗时 48.2s
+
+  📊 结果: 覆盖率=42.3%, 准确性=3.2, 完整性=2.8, 相关性=3.5, 检索延迟=1098.4ms
+Loading weights:   0%|          | 0/105 [00:00<?, ?it/s]Loading weights: 100%|██████████| 105/105 [00:00<00:00, 8269.68it/s]
+[1mBertForSequenceClassification LOAD REPORT[0m from: cross-encoder/ms-marco-MiniLM-L-6-v2
+Key                          | Status     |  | 
+-----------------------------+------------+--+-
+bert.embeddings.position_ids | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+
+============================================================
+▶ 配置: vec_k=60_bm25_k=60
+============================================================
+测试样本: 13, 批大小: 5, 预计 LLM 调用: 3
+
+[1/3] 评估 5 个问题...
+  ✓ 评分完成，耗时 62.2s
+  😴 休息 31s...
+
+[2/3] 评估 5 个问题...
+  ✓ 评分完成，耗时 60.8s
+  😴 休息 30s...
+
+[3/3] 评估 3 个问题...
+  ✓ 评分完成，耗时 55.1s
+
+  📊 结果: 覆盖率=42.3%, 准确性=3.0, 完整性=3.1, 相关性=3.5, 检索延迟=1347.7ms
+Loading weights:   0%|          | 0/105 [00:00<?, ?it/s]Loading weights: 100%|██████████| 105/105 [00:00<00:00, 7595.49it/s]
+[1mBertForSequenceClassification LOAD REPORT[0m from: cross-encoder/ms-marco-MiniLM-L-6-v2
+Key                          | Status     |  | 
+-----------------------------+------------+--+-
+bert.embeddings.position_ids | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+
+============================================================
+▶ 配置: vec_k=40_bm25_k=20
+============================================================
+测试样本: 13, 批大小: 5, 预计 LLM 调用: 3
+
+[1/3] 评估 5 个问题...
+  ✓ 评分完成，耗时 89.6s
+  😴 休息 44s...
+
+[2/3] 评估 5 个问题...
+  ✓ 评分完成，耗时 56.4s
+  😴 休息 28s...
+
+[3/3] 评估 3 个问题...
+  ✓ 评分完成，耗时 65.8s
+
+  📊 结果: 覆盖率=42.3%, 准确性=3.4, 完整性=2.9, 相关性=3.9, 检索延迟=880.6ms
+Loading weights:   0%|          | 0/105 [00:00<?, ?it/s]Loading weights: 100%|██████████| 105/105 [00:00<00:00, 9187.10it/s]
+[1mBertForSequenceClassification LOAD REPORT[0m from: cross-encoder/ms-marco-MiniLM-L-6-v2
+Key                          | Status     |  | 
+-----------------------------+------------+--+-
+bert.embeddings.position_ids | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+
+============================================================
+▶ 配置: vec_k=20_bm25_k=40
+============================================================
+测试样本: 13, 批大小: 5, 预计 LLM 调用: 3
+
+[1/3] 评估 5 个问题...
+  ✓ 评分完成，耗时 82.5s
+  😴 休息 41s...
+
+[2/3] 评估 5 个问题...
+  ✓ 评分完成，耗时 58.7s
+  😴 休息 29s...
+
+[3/3] 评估 3 个问题...
+  ✓ 评分完成，耗时 70.0s
+
+  📊 结果: 覆盖率=42.3%, 准确性=3.3, 完整性=2.8, 相关性=3.5, 检索延迟=1082.0ms
+
+----------------------------------------------------------------------
+📋 大候选池参数对比
+----------------------------------------------------------------------
+配置                        覆盖率       检索延迟
+----------------------------------------------------------------------
+vec_k=20_bm25_k=20     50.0%     677.0ms
+vec_k=40_bm25_k=40     42.3%    1098.4ms
+vec_k=60_bm25_k=60     42.3%    1347.7ms
+vec_k=40_bm25_k=20     42.3%     880.6ms
+vec_k=20_bm25_k=40     42.3%    1082.0ms
+
+======================================================================
+🔥 消融试验：HyDE效果对比
+======================================================================
+Loading weights:   0%|          | 0/105 [00:00<?, ?it/s]Loading weights: 100%|██████████| 105/105 [00:00<00:00, 8890.72it/s]
+[1mBertForSequenceClassification LOAD REPORT[0m from: cross-encoder/ms-marco-MiniLM-L-6-v2
+Key                          | Status     |  | 
+-----------------------------+------------+--+-
+bert.embeddings.position_ids | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+
+============================================================
+▶ 配置: hybrid_rerank
+============================================================
+测试样本: 13, 批大小: 5, 预计 LLM 调用: 3
+
+[1/3] 评估 5 个问题...
+  ✓ 评分完成，耗时 102.0s
+  😴 休息 50s...
+
+[2/3] 评估 5 个问题...
+  ✓ 评分完成，耗时 88.3s
+  😴 休息 44s...
+
+[3/3] 评估 3 个问题...
+  ✓ 评分完成，耗时 72.5s
+
+  📊 结果: 覆盖率=42.3%, 准确性=3.2, 完整性=2.7, 相关性=3.5, 检索延迟=1502.3ms
+    [abstract] 样本数=4, 覆盖率=37.5%
+    [concrete] 样本数=9, 覆盖率=44.4%
+Loading weights:   0%|          | 0/105 [00:00<?, ?it/s]Loading weights: 100%|██████████| 105/105 [00:00<00:00, 8938.54it/s]
+[1mBertForSequenceClassification LOAD REPORT[0m from: cross-encoder/ms-marco-MiniLM-L-6-v2
+Key                          | Status     |  | 
+-----------------------------+------------+--+-
+bert.embeddings.position_ids | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.

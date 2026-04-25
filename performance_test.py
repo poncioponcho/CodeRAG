@@ -129,11 +129,13 @@ class PerformanceTester:
         
         processor = get_parallel_processor(max_workers=4)
         
-        # 定义检索函数
+        # 预构建检索器（避免重复加载模型）
+        hybrid_retriever = HybridRetriever(self.vectorstore, self.chunks, vec_k=20, bm25_k=20)
+        hyde_retriever = HyDERetriever(hybrid_retriever, self.hyde_generator)
+        rerank_retriever = RerankRetriever(hyde_retriever, k=10)
+        
+        # 定义检索函数（使用预构建的检索器）
         def retrieve_query(query):
-            hybrid_retriever = HybridRetriever(self.vectorstore, self.chunks, vec_k=20, bm25_k=20)
-            hyde_retriever = HyDERetriever(hybrid_retriever, self.hyde_generator)
-            rerank_retriever = RerankRetriever(hyde_retriever, k=10)
             docs = rerank_retriever.invoke(query)
             return len(docs)
         
@@ -145,8 +147,7 @@ class PerformanceTester:
         
         # 并行处理
         start_time = time.time()
-        loop = asyncio.get_event_loop()
-        results = loop.run_until_complete(processor.process_batch(test_queries, retrieve_query))
+        results = asyncio.run(processor.process_batch(test_queries, retrieve_query))
         parallel_time = time.time() - start_time
         
         parallel_results = {

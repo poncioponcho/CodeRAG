@@ -120,7 +120,7 @@ with st.sidebar:
         if docs:
             chunks = []
             for doc in docs:
-                doc_chunks = split_by_headings(doc.page_content, doc.metadata["source"])
+                doc_chunks = split_by_headings(doc.page_content, doc.metadata["source"], max_chunk_size=2000, chunk_overlap=250)
                 chunks.extend(doc_chunks)
 
             print(f"[Debug] 总 chunk 数: {len(chunks)}")
@@ -180,7 +180,7 @@ else:
                 ))
         chunks = []
         for doc in all_docs:
-            chunks.extend(split_by_headings(doc.page_content, doc.metadata["source"]))
+            chunks.extend(split_by_headings(doc.page_content, doc.metadata["source"], max_chunk_size=2000, chunk_overlap=250))
         st.session_state.all_chunks = chunks
 
     embedding = get_embedding()
@@ -224,12 +224,27 @@ else:
         with st.spinner("Hybrid检索 + Rerank精排 + 生成回答..."):
             rewritten, note, _ = rewrite_query(query)
             
-            # 执行检索
+            # 执行检索（获取详细信息）
             if use_hyde and hasattr(rerank_retriever, 'invoke_with_hyde_info'):
-                docs, hyde_info = rerank_retriever.invoke_with_hyde_info(rewritten)
+                result = rerank_retriever.invoke_with_hyde_info(rewritten)
+                if isinstance(result, tuple) and len(result) == 2:
+                    docs, hyde_info = result
+                    retrieval_details = None  # HyDE 模式暂不展示详细信息
+                else:
+                    docs = result
+                    hyde_info = {}
+                    retrieval_details = None
             else:
-                docs = rerank_retriever.invoke(rewritten)
-                hyde_info = {}
+                retrieval_result = rerank_retriever.invoke(rewritten, return_details=True)
+                
+                if isinstance(retrieval_result, dict):
+                    docs = retrieval_result["results"]
+                    retrieval_details = retrieval_result
+                    hyde_info = {}
+                else:
+                    docs = retrieval_result
+                    retrieval_details = None
+                    hyde_info = {}
 
             context = "\n\n".join([
                 f"[{d.metadata['source']}] {d.page_content}"
@@ -255,6 +270,9 @@ else:
 请回答："""
 
             answer = ollama_generate(prompt)
+            
+            # 计算 token 数（粗略估算：中文约 1.5 字符/token，英文约 4 字符/token）
+            context_tokens = int(len(context) / 2)  # 简化估算
 
         with st.chat_message("assistant"):
             if note:
@@ -262,12 +280,94 @@ else:
             if hyde_info.get("used"):
                 st.caption(f"✨ 使用 HyDE（问题类型: {hyde_info.get('classification', {}).get('type', 'unknown')}，置信度: {hyde_info.get('classification', {}).get('confidence', 0)}）")
             st.write(answer)
+            
             sources = [
                 f"**{d.metadata['source']}**：{d.page_content[:200]}..."
                 for d in docs
             ]
-            with st.expander("查看引用来源（Rerank 后 top-3）"):
+            
+            with st.expander("查看引用来源（Rerank 后 top-{len(docs)}）"):
                 for s in sources:
                     st.markdown(s)
+            
+            # ========== 检索过程面板 ==========
+            with st.expander("🔍 检索过程", expanded=False):
+                if retrieval_details and isinstance(retrieval_result, dict):
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        st.markdown("### 📊 向量召回 Top-5")
+                        vec_results = retrieval_details.get("base_info", {}).get("vec_results", [])
+                        if vec_results:
+                            for i, (doc, score) in enumerate(vec_results[:5], 1):
+                                source_name = doc.metadata.get("source", "未知文件")
+                                score_display = f"{score:.4f}" if isinstance(score, (int, float)) else str(score)
+                                st.markdown(f"**{i}.** `{source_name}` - 相似度: **{score_display}**")
+                        else:
+                            st.info("无向量召回数据")
+                    
+                    with col2:
+                        st.markdown("### 📝 BM25 召回 Top-5")
+                        bm25_results = retrieval_details.get("base_info", {}).get("bm25_results", [])
+                        if bm25_results:
+                            for i, (doc, score) in enumerate(bm25_results[:5], 1):
+                                source_name = doc.metadata.get("source", "未知文件")
+                                score_display = f"{score:.4f}" if isinstance(score, (int, float)) else str(score)
+                                st.markdown(f"**{i}.** `{source_name}` - BM25分数: **{score_display}**")
+                        else:
+                            st.info("无BM25召回数据")
+                    
+                    st.divider()
+                    
+                    st.markdown("### 🎯 CrossEncoder 精排后 Top-3")
+                    rerank_scores = retrieval_details.get("rerank_scores", [])
+                    if rerank_scores:
+                        selected_sources = [d.metadata.get("source", "") for d in docs]
+                        
+                        for i, (score, doc) in enumerate(rerank_scores[:3], 1):
+                            source_name = doc.metadata.get("source", "未知文件")
+                            is_selected = source_name in selected_sources
+                            status_icon = "✅" if is_selected else "❌"
+                            status_text = "已选中" if is_selected else "未选中"
+                            
+                            st.markdown(
+                                f"**{i}.** `{source_name}` - 重排分数: **{score:.4f}** "
+                                f"{status_icon} *({status_text})*"
+                            )
+                    else:
+                        st.info("无精排数据")
+                    
+                    st.divider()
+                    
+                    st.markdown("### 🔢 最终上下文统计")
+                    
+                    metric_col1, metric_col2, metric_col3 = st.columns(3)
+                    
+                    with metric_col1:
+                        st.metric(
+                            label="上下文 Token 数",
+                            value=f"{context_tokens:,}",
+                            delta=None,
+                            help="粗略估算值（约 2字符/token），用于参考"
+                        )
+                    
+                    with metric_col2:
+                        st.metric(
+                            label="引用文档数",
+                            value=f"{len(docs)}",
+                            delta=None
+                        )
+                    
+                    with metric_col3:
+                        total_candidates = len(retrieval_details.get("base_info", {}).get("vec_results", []))
+                        st.metric(
+                            label="候选文档数",
+                            value=f"{total_candidates}",
+                            delta=None
+                        )
+                    
+                    st.caption(f"💡 提示: Token 数为估算值，实际 token 数取决于分词器和具体内容。上下文越长，LLM 处理时间越长。")
+                else:
+                    st.info("详细检索数据不可用（可能使用了 HyDE 模式或旧版检索器）")
 
         st.session_state.history.append((query, answer, sources, hyde_info))

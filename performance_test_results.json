@@ -1,0 +1,413 @@
+{
+  "hyde_performance": {
+    "queries": [
+      {
+        "query": "如何理解注意力机制在Transformer中的作用？",
+        "results": [
+          {
+            "iteration": 1,
+            "time": 42.5643093585968,
+            "used_hyde": true,
+            "classification": "abstract"
+          },
+          {
+            "iteration": 2,
+            "time": 21.17915177345276,
+            "used_hyde": true,
+            "classification": "abstract"
+          },
+          {
+            "iteration": 3,
+            "time": 18.91661787033081,
+            "used_hyde": true,
+            "classification": "abstract"
+          }
+        ]
+      },
+      {
+        "query": "PyTorch如何实现混合精度训练？",
+        "results": [
+          {
+            "iteration": 1,
+            "time": 17.76149296760559,
+            "used_hyde": false,
+            "classification": "concrete"
+          },
+          {
+            "iteration": 2,
+            "time": 18.56382703781128,
+            "used_hyde": false,
+            "classification": "concrete"
+          },
+          {
+            "iteration": 3,
+            "time": 16.912333965301514,
+            "used_hyde": false,
+            "classification": "concrete"
+          }
+        ]
+      },
+      {
+        "query": "谈谈你对RAG的理解",
+        "results": [
+          {
+            "iteration": 1,
+            "time": 43.155282974243164,
+            "used_hyde": true,
+            "classification": "abstract"
+          },
+          {
+            "iteration": 2,
+            "time": 20.95403528213501,
+            "used_hyde": true,
+            "classification": "abstract"
+          },
+          {
+            "iteration": 3,
+            "time": 18.611480236053467,
+            "used_hyde": true,
+            "classification": "abstract"
+          }
+        ]
+      },
+      {
+        "query": "为什么现在大模型都是decoder-only架构？",
+        "results": [
+          {
+            "iteration": 1,
+            "time": 60.660656213760376,
+            "used_hyde": true,
+            "classification": "abstract"
+          },
+          {
+            "iteration": 2,
+            "time": 23.157713174819946,
+            "used_hyde": true,
+            "classification": "abstract"
+          },
+          {
+            "iteration": 3,
+            "time": 18.04863715171814,
+            "used_hyde": true,
+            "classification": "abstract"
+          }
+        ]
+      },
+      {
+        "query": "Attention公式是什么？",
+        "results": [
+          {
+            "iteration": 1,
+            "time": 9.220645904541016,
+            "used_hyde": false,
+            "classification": "concrete"
+          },
+          {
+            "iteration": 2,
+            "time": 9.635385990142822,
+            "used_hyde": false,
+            "classification": "concrete"
+          },
+          {
+            "iteration": 3,
+            "time": 9.722211122512817,
+            "used_hyde": false,
+            "classification": "concrete"
+          }
+        ]
+      },
+      {
+        "query": "BERT和GPT的主要区别是什么？",
+        "results": [
+          {
+            "iteration": 1,
+            "time": 46.58905291557312,
+            "used_hyde": true,
+            "classification": "abstract"
+          },
+          {
+            "iteration": 2,
+            "time": 23.02381205558777,
+            "used_hyde": true,
+            "classification": "abstract"
+          },
+          {
+            "iteration": 3,
+            "time": 20.8215069770813,
+            "used_hyde": true,
+            "classification": "abstract"
+          }
+        ]
+      },
+      {
+        "query": "什么是知识蒸馏？",
+        "results": [
+          {
+            "iteration": 1,
+            "time": 36.27118372917175,
+            "used_hyde": true,
+            "classification": "abstract"
+          },
+          {
+            "iteration": 2,
+            "time": 18.543498039245605,
+            "used_hyde": true,
+            "classification": "abstract"
+          },
+          {
+            "iteration": 3,
+            "time": 21.010488033294678,
+            "used_hyde": true,
+            "classification": "abstract"
+          }
+        ]
+      },
+      {
+        "query": "如何评估大语言模型的性能？",
+        "results": [
+          {
+            "iteration": 1,
+            "time": 62.63537406921387,
+            "used_hyde": true,
+            "classification": "abstract"
+          },
+          {
+            "iteration": 2,
+            "time": 29.549203872680664,
+            "used_hyde": true,
+            "classification": "abstract"
+          },
+          {
+            "iteration": 3,
+            "time": 26.862178802490234,
+            "used_hyde": true,
+            "classification": "abstract"
+          }
+        ]
+      }
+    ],
+    "total_time": 634.3700795173645,
+    "avg_time": 26.432086646556854,
+    "cache_hits": 0,
+    "total_calls": 24
+  },
+  "retrieval_performance": {
+    "queries": [
+      {
+        "query": "如何理解注意力机制在Transformer中的作用？",
+        "results": [
+          {
+            "iteration": 1,
+            "time": 44.52367091178894,
+            "docs_count": 10
+          },
+          {
+            "iteration": 2,
+            "time": 41.418607234954834,
+            "docs_count": 10
+          },
+          {
+            "iteration": 3,
+            "time": 50.99837327003479,
+            "docs_count": 10
+          }
+        ]
+      },
+      {
+        "query": "PyTorch如何实现混合精度训练？",
+        "results": [
+          {
+            "iteration": 1,
+            "time": 25.218334913253784,
+            "docs_count": 10
+          },
+          {
+            "iteration": 2,
+            "time": 26.73512601852417,
+            "docs_count": 10
+          },
+          {
+            "iteration": 3,
+            "time": 24.597020864486694,
+            "docs_count": 10
+          }
+        ]
+      },
+      {
+        "query": "谈谈你对RAG的理解",
+        "results": [
+          {
+            "iteration": 1,
+            "time": 11.360917091369629,
+            "docs_count": 10
+          },
+          {
+            "iteration": 2,
+            "time": 0.7447340488433838,
+            "docs_count": 10
+          },
+          {
+            "iteration": 3,
+            "time": 0.8515000343322754,
+            "docs_count": 10
+          }
+        ]
+      },
+      {
+        "query": "为什么现在大模型都是decoder-only架构？",
+        "results": [
+          {
+            "iteration": 1,
+            "time": 0.785545825958252,
+            "docs_count": 10
+          },
+          {
+            "iteration": 2,
+            "time": 0.5825972557067871,
+            "docs_count": 10
+          },
+          {
+            "iteration": 3,
+            "time": 0.571835994720459,
+            "docs_count": 10
+          }
+        ]
+      },
+      {
+        "query": "Attention公式是什么？",
+        "results": [
+          {
+            "iteration": 1,
+            "time": 0.5756819248199463,
+            "docs_count": 10
+          },
+          {
+            "iteration": 2,
+            "time": 0.5436642169952393,
+            "docs_count": 10
+          },
+          {
+            "iteration": 3,
+            "time": 0.6188962459564209,
+            "docs_count": 10
+          }
+        ]
+      },
+      {
+        "query": "BERT和GPT的主要区别是什么？",
+        "results": [
+          {
+            "iteration": 1,
+            "time": 0.8873777389526367,
+            "docs_count": 10
+          },
+          {
+            "iteration": 2,
+            "time": 0.8508238792419434,
+            "docs_count": 10
+          },
+          {
+            "iteration": 3,
+            "time": 0.8207340240478516,
+            "docs_count": 10
+          }
+        ]
+      },
+      {
+        "query": "什么是知识蒸馏？",
+        "results": [
+          {
+            "iteration": 1,
+            "time": 0.6642100811004639,
+            "docs_count": 10
+          },
+          {
+            "iteration": 2,
+            "time": 0.5880439281463623,
+            "docs_count": 10
+          },
+          {
+            "iteration": 3,
+            "time": 0.573746919631958,
+            "docs_count": 10
+          }
+        ]
+      },
+      {
+        "query": "如何评估大语言模型的性能？",
+        "results": [
+          {
+            "iteration": 1,
+            "time": 0.6656489372253418,
+            "docs_count": 10
+          },
+          {
+            "iteration": 2,
+            "time": 0.5328319072723389,
+            "docs_count": 10
+          },
+          {
+            "iteration": 3,
+            "time": 0.5866029262542725,
+            "docs_count": 10
+          }
+        ]
+      }
+    ],
+    "total_time": 236.29652619361877,
+    "avg_time": 9.845688591400782
+  },
+  "parallel_performance": {
+    "serial_time": 379.2307481765747,
+    "parallel_time": 21.11852502822876,
+    "speedup": 17.957255427150507,
+    "queries_processed": 8
+  },
+  "cache_effectiveness": {
+    "queries": [
+      {
+        "query": "如何理解注意力机制在Transformer中的作用？",
+        "hits": 1,
+        "total": 5
+      },
+      {
+        "query": "PyTorch如何实现混合精度训练？",
+        "hits": 4,
+        "total": 5
+      },
+      {
+        "query": "谈谈你对RAG的理解",
+        "hits": 4,
+        "total": 5
+      },
+      {
+        "query": "为什么现在大模型都是decoder-only架构？",
+        "hits": 4,
+        "total": 5
+      },
+      {
+        "query": "Attention公式是什么？",
+        "hits": 4,
+        "total": 5
+      },
+      {
+        "query": "BERT和GPT的主要区别是什么？",
+        "hits": 4,
+        "total": 5
+      },
+      {
+        "query": "什么是知识蒸馏？",
+        "hits": 4,
+        "total": 5
+      },
+      {
+        "query": "如何评估大语言模型的性能？",
+        "hits": 4,
+        "total": 5
+      }
+    ],
+    "cache_hits": 29,
+    "total_calls": 40,
+    "hit_rate": 0.725
+  }
+}
