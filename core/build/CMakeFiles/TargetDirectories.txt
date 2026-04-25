@@ -1,0 +1,3 @@
+/Users/seyonmacbook/Desktop/电子书/26春招/CodeRAG/core/build/CMakeFiles/_coarse.dir
+/Users/seyonmacbook/Desktop/电子书/26春招/CodeRAG/core/build/CMakeFiles/edit_cache.dir
+/Users/seyonmacbook/Desktop/电子书/26春招/CodeRAG/core/build/CMakeFiles/rebuild_cache.dir
