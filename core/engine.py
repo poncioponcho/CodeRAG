@@ -2,6 +2,8 @@ import asyncio
 import time
 import sys
 import os
+import pickle
+import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 try:
@@ -9,11 +11,12 @@ try:
 except ImportError:
     dc = None
 
-import aiohttp
 from typing import Dict, List, Optional, Any
 
 from core.embedder import ONNXEmbedder
 from core.reranker import ONNXReranker
+
+EMBEDDINGS_CACHE = "embeddings_cache.npy"
 
 class CodeRAGEngine:
     def __init__(
@@ -37,10 +40,10 @@ class CodeRAGEngine:
         else:
             self.cache = None
         
-        self.session = None
         self.coarse_engine = None
         self.chunks_text = []
         self.chunks_source = []
+        self.query_embedding = []
         
         self._initialized = False
     
@@ -49,12 +52,9 @@ class CodeRAGEngine:
             return
         
         print("🚀 Initializing CodeRAG Engine v2.5...")
-        
-        import pickle
-        import numpy as np
+        t0 = time.perf_counter()
         
         with open(self.chunks_path, 'rb') as f:
-            from langchain.schema import Document
             chunks_data = pickle.load(f)
             
             if isinstance(chunks_data, list) and len(chunks_data) > 0:
@@ -65,6 +65,8 @@ class CodeRAGEngine:
                     self.chunks_text = [str(doc) for doc in chunks_data]
                     self.chunks_source = [f"doc_{i}.md" for i in range(len(chunks_data))]
         
+        print(f"  📄 Loaded {len(self.chunks_text)} chunks in {(time.perf_counter()-t0)*1000:.0f}ms")
+        
         import _coarse
         self.coarse_engine = _coarse.CoarseEngine(
             self.chunks_text,
@@ -73,26 +75,76 @@ class CodeRAGEngine:
             bm25_k=20
         )
         
-        all_embeddings = []
-        for text in self.chunks_text:
-            emb = self.embedder.embed_query(text)
-            all_embeddings.append(emb[0])
+        if os.path.exists(EMBEDDINGS_CACHE):
+            print(f"  ⚡ Loading cached embeddings from {EMBEDDINGS_CACHE}...")
+            embeddings_array = np.load(EMBEDDINGS_CACHE)
+            print(f"  ✅ Loaded embeddings: shape={embeddings_array.shape}")
+        else:
+            print(f"  🔄 Computing embeddings for {len(self.chunks_text)} chunks...")
+            t1 = time.perf_counter()
+            
+            all_embeddings = []
+            batch_size = 32
+            for i in range(0, len(self.chunks_text), batch_size):
+                batch = self.chunks_text[i:i+batch_size]
+                for text in batch:
+                    emb = self.embedder.embed_query(text)
+                    all_embeddings.append(emb[0])
+                
+                progress = min(i + batch_size, len(self.chunks_text))
+                if progress % 100 == 0 or progress == len(self.chunks_text):
+                    print(f"    Progress: {progress}/{len(self.chunks_text)} chunks")
+            
+            embeddings_array = np.array(all_embeddings, dtype=np.float32)
+            np.save(EMBEDDINGS_CACHE, embeddings_array)
+            print(f"  ✅ Embeddings computed and cached in {(time.perf_counter()-t1)*1000:.0f}ms")
         
-        embeddings_array = np.array(all_embeddings, dtype=np.float32)
         self.coarse_engine.set_embeddings(embeddings_array)
         self.coarse_engine.build_bm25_index()
         
-        connector = aiohttp.TCPConnector(limit=5)
-        self.session = aiohttp.ClientSession(connector=connector)
-        
         self._initialized = True
-        print(f"✅ Engine initialized with {len(self.chunks_text)} chunks")
+        print(f"✅ Engine initialized in {(time.perf_counter()-t0)*1000:.0f}ms")
     
     def _is_abstract_question(self, query: str) -> bool:
         abstract_keywords = ['什么', '如何', '为什么', '原理', '含义', '解释', '说明']
         return any(kw in query for kw in abstract_keywords)
     
-    async def _generate_hyde(self, query: str) -> str:
+    def _call_ollama_sync(self, prompt: str, context: str) -> str:
+        import requests
+        
+        full_prompt = f"""基于以下参考信息回答用户问题。请简洁回答，不超过3句话。
+
+参考信息：
+{context}
+
+用户问题：{prompt}
+
+回答："""
+        
+        payload = {
+            "model": self.model_name,
+            "prompt": full_prompt,
+            "stream": False,
+            "options": {
+                "temperature": 0.3,
+                "num_predict": 512,
+                "num_ctx": 4096,
+                "top_p": 0.9,
+                "repeat_penalty": 1.1
+            }
+        }
+        
+        resp = requests.post(
+            f"{self.ollama_url}/api/generate",
+            json=payload,
+            timeout=90
+        )
+        result = resp.json()
+        return result.get('response', '抱歉，无法生成回答。')
+    
+    def _generate_hyde_sync(self, query: str) -> str:
+        import requests
+        
         prompt = f"""请为以下问题生成一个简短的假设性答案（2-3句话）：
 问题：{query}
 答案："""
@@ -107,43 +159,15 @@ class CodeRAGEngine:
             }
         }
         
-        async with self.session.post(
+        resp = requests.post(
             f"{self.ollama_url}/api/generate",
             json=payload,
-            timeout=aiohttp.ClientTimeout(total=30)
-        ) as resp:
-            result = await resp.json()
-            return result.get('response', '')
+            timeout=30
+        )
+        result = resp.json()
+        return result.get('response', '')
     
-    async def _call_ollama(self, prompt: str, context: str) -> str:
-        full_prompt = f"""基于以下参考信息回答用户问题。
-
-参考信息：
-{context}
-
-用户问题：{prompt}
-
-请用中文简洁回答，并标注信息来源。"""
-        
-        payload = {
-            "model": self.model_name,
-            "prompt": full_prompt,
-            "stream": False,
-            "options": {
-                "temperature": 0.3,
-                "num_predict": 1024
-            }
-        }
-        
-        async with self.session.post(
-            f"{self.ollama_url}/api/generate",
-            json=payload,
-            timeout=aiohttp.ClientTimeout(total=60)
-        ) as resp:
-            result = await resp.json()
-            return result.get('response', '抱歉，无法生成回答。')
-    
-    async def query(self, query: str, top_k: int = 10) -> Dict[str, Any]:
+    async def query(self, query: str, top_k: int = 10, use_hyde: bool = False) -> Dict[str, Any]:
         start_time = time.perf_counter()
         
         if not self._initialized:
@@ -151,24 +175,35 @@ class CodeRAGEngine:
         
         cache_key = f"query:{hash(query)}:{top_k}"
         if self.cache and cache_key in self.cache:
-            cached_result = self.cache[cache_key]
+            cached_result = dict(self.cache[cache_key])
             cached_result['_cache_hit'] = True
             return cached_result
         
         hyde_query = query
-        if self._is_abstract_question(query):
+        if use_hyde and self._is_abstract_question(query):
             try:
-                hyde_query = await self._generate_hyde(query)
+                loop = asyncio.get_event_loop()
+                hyde_query = await loop.run_in_executor(
+                    None, lambda: self._generate_hyde_sync(query)
+                )
             except Exception as e:
                 print(f"HyDE generation failed: {e}")
                 hyde_query = query
         
+        t_coarse = time.perf_counter()
         loop = asyncio.get_event_loop()
+        
+        query_emb = self.embedder.embed_query(hyde_query)
+        query_emb_flat = query_emb[0].tolist()
+        self.coarse_engine.set_query_embedding(query_emb_flat)
+        
         coarse_indices = await loop.run_in_executor(
             None,
             lambda: self.coarse_engine.coarse_search(hyde_query, top_n=40)
         )
+        coarse_ms = (time.perf_counter() - t_coarse) * 1000
         
+        t_rerank = time.perf_counter()
         retrieved_texts = self.coarse_engine.get_chunk_texts(coarse_indices)
         retrieved_sources = self.coarse_engine.get_chunk_sources(coarse_indices)
         
@@ -177,6 +212,7 @@ class CodeRAGEngine:
             None,
             lambda: self.reranker.predict(rerank_pairs)
         )
+        rerank_ms = (time.perf_counter() - t_rerank) * 1000
         
         scored_results = list(zip(retrieved_texts, retrieved_sources, rerank_scores))
         scored_results.sort(key=lambda x: x[2], reverse=True)
@@ -190,12 +226,17 @@ class CodeRAGEngine:
             sources_list.append({
                 'source': source,
                 'score': float(score),
-                'preview': text[:100]
+                'preview': text[:200]
             })
         
         context_str = "\n".join(context_parts)
         
-        answer = await self._call_ollama(query, context_str)
+        t_llm = time.perf_counter()
+        answer = await loop.run_in_executor(
+            None,
+            lambda: self._call_ollama_sync(query, context_str)
+        )
+        llm_ms = (time.perf_counter() - t_llm) * 1000
         
         total_time = (time.perf_counter() - start_time) * 1000
         
@@ -206,6 +247,9 @@ class CodeRAGEngine:
             'retrieved_count': len(coarse_indices),
             'top_k': top_k,
             'latency_ms': round(total_time, 2),
+            'coarse_ms': round(coarse_ms, 2),
+            'rerank_ms': round(rerank_ms, 2),
+            'llm_ms': round(llm_ms, 2),
             'hyde_used': hyde_query != query,
             '_cache_hit': False
         }
@@ -232,72 +276,3 @@ class CodeRAGEngine:
                 processed_results.append(r)
         
         return processed_results
-    
-    async def close(self):
-        if self.session:
-            await self.session.close()
-        self._initialized = False
-    
-    async def __aenter__(self):
-        await self.initialize()
-        return self
-    
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        await self.close()
-
-
-async def benchmark_engine(num_queries=50, concurrency=5):
-    engine = CodeRAGEngine()
-    await engine.initialize()
-    
-    test_queries = [
-        "d*d公式表示什么？",
-        "ResNet-50的架构特点是什么？",
-        "注意力机制的原理是什么？",
-        "深度学习有哪些应用场景？",
-        "PyTorch和TensorFlow的区别？"
-    ] * 10
-    
-    semaphore = asyncio.Semaphore(concurrency)
-    
-    async def single_query(query):
-        async with semaphore:
-            start = time.perf_counter()
-            result = await engine.query(query)
-            latency = (time.perf_counter() - start) * 1000
-            return latency, result.get('latency_ms', -1)
-    
-    print(f"\n🔥 Running benchmark: {num_queries} queries, concurrency={concurrency}")
-    
-    start_total = time.perf_counter()
-    tasks = [single_query(q) for q in test_queries[:num_queries]]
-    results = await asyncio.gather(*tasks)
-    total_time = (time.perf_counter() - start_total) * 1000
-    
-    latencies = [r[0] for r in results]
-    avg_latency = sum(latencies) / len(latencies)
-    p95_latency = sorted(latencies)[int(len(latencies) * 0.95)]
-    p99_latency = sorted(latencies)[int(len(latencies) * 0.99)]
-    
-    qps = num_queries / (total_time / 1000)
-    
-    print(f"\n{'='*70}")
-    print("📊 Benchmark Results")
-    print(f"{'='*70}")
-    print(f"  Total queries:     {num_queries}")
-    print(f"  Concurrency:       {concurrency}")
-    print(f"  Total time:        {total_time:.2f}ms")
-    print(f"  Average latency:   {avg_latency:.2f}ms")
-    print(f"  P95 latency:       {p95_latency:.2f}ms")
-    print(f"  P99 latency:       {p99_latency:.2f}ms")
-    print(f"  QPS:               {qps:.1f}")
-    print(f"  Target (<200ms):   {'✅ PASS' if avg_latency < 200 else '❌ FAIL'}")
-    print(f"  Target (>4 QPS):   {'✅ PASS' if qps >= 4 else '❌ FAIL'}")
-    
-    await engine.close()
-    
-    return avg_latency, qps
-
-
-if __name__ == "__main__":
-    asyncio.run(benchmark_engine())

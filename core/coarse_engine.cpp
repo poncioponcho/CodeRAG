@@ -8,8 +8,7 @@
 #include <unordered_set>
 #include <algorithm>
 #include <cmath>
-#include <fstream>
-#include <sstream>
+#include <chrono>
 #include <iostream>
 
 namespace py = pybind11;
@@ -21,6 +20,7 @@ private:
     vector<string> chunks_text;
     vector<string> chunks_source;
     vector<vector<float>> embeddings;
+    vector<float> query_embedding;
     int vec_k;
     int bm25_k;
     int num_chunks;
@@ -30,10 +30,6 @@ private:
     double avgdl;
     float k1 = 1.5f;
     float b = 0.75f;
-    
-    bool is_chinese_char(unsigned char c) {
-        return (c >= 0xE4 && c <= 0xE9);
-    }
     
     static string extract_utf8_char_static(const string& text, size_t& pos) {
         if (pos >= text.size()) return "";
@@ -88,6 +84,10 @@ public:
         std::cout << "Loaded " << rows << " embeddings with dim " << cols << std::endl;
     }
     
+    void set_query_embedding(vector<float> emb) {
+        query_embedding = std::move(emb);
+    }
+    
     void build_bm25_index() {
         std::cout << "Building BM25 index..." << std::endl;
         
@@ -125,7 +125,6 @@ public:
         sregex_token_iterator it(text.begin(), text.end(), pattern, {-1, 0});
         sregex_token_iterator end;
         
-        string prev;
         while (it != end) {
             if (it->matched) {
                 string match_str = it->str();
@@ -192,7 +191,7 @@ public:
     }
     
     vector<pair<int, float>> vector_search(const vector<float>& query_emb, int k) {
-        if (embeddings.empty()) return {};
+        if (embeddings.empty() || query_emb.empty()) return {};
         
         vector<pair<int, float>> scores;
         
@@ -200,7 +199,7 @@ public:
             float dot_product = 0;
             float norm_a = 0, norm_b = 0;
             
-            for (size_t j = 0; j < query_emb.size(); j++) {
+            for (size_t j = 0; j < query_emb.size() && j < embeddings[i].size(); j++) {
                 dot_product += query_emb[j] * embeddings[i][j];
                 norm_a += query_emb[j] * query_emb[j];
                 norm_b += embeddings[i][j] * embeddings[i][j];
@@ -232,7 +231,7 @@ public:
         
         auto query_tokens = hybrid_tokenize(query_text);
         
-        auto vec_results = vector_search(vector<float>(), vec_k);
+        auto vec_results = vector_search(query_embedding, vec_k);
         auto bm25_results = bm25_search(query_tokens, bm25_k);
         
         unordered_set<string> seen_keys;
@@ -302,6 +301,8 @@ PYBIND11_MODULE(_coarse, m) {
              py::arg("vec_k") = 20, py::arg("bm25_k") = 20)
         .def("set_embeddings", &CoarseEngine::set_embeddings,
              "Set embedding vectors from Python ONNX model")
+        .def("set_query_embedding", &CoarseEngine::set_query_embedding,
+             "Set query embedding vector for vector search")
         .def("build_bm25_index", &CoarseEngine::build_bm25_index,
              "Build BM25 index from corpus", py::call_guard<py::gil_scoped_release>())
         .def("coarse_search", &CoarseEngine::coarse_search,
@@ -309,5 +310,9 @@ PYBIND11_MODULE(_coarse, m) {
              py::arg("query_text"), py::arg("top_n") = 40,
              py::call_guard<py::gil_scoped_release>())
         .def_static("hybrid_tokenize", &CoarseEngine::hybrid_tokenize,
-                    "Tokenize Chinese/English mixed text");
+                    "Tokenize Chinese/English mixed text")
+        .def("get_chunk_texts", &CoarseEngine::get_chunk_texts,
+             "Get chunk texts by indices")
+        .def("get_chunk_sources", &CoarseEngine::get_chunk_sources,
+             "Get chunk sources by indices");
 }
