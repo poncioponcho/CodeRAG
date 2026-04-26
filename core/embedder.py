@@ -4,10 +4,17 @@ import onnxruntime as ort
 class ONNXEmbedder:
     def __init__(self, model_path: str = "models/bge-small-zh-onnx/model.onnx"):
         providers = [
-            ('CoreMLExecutionProvider', {}),
+            'CoreMLExecutionProvider',
             'CPUExecutionProvider'
         ]
+        
         self.session = ort.InferenceSession(model_path, providers=providers)
+        active_providers = self.session.get_providers()
+        
+        assert active_providers[0] == 'CoreMLExecutionProvider', \
+            f"[FATAL] CoreML 未生效！实际 providers: {active_providers}。请检查 ONNX 模型格式或 Ollama 版本。"
+        
+        print(f"  ✅ Embedder: CoreML/ANE 已激活 | providers={active_providers}")
         self.tokenizer = None
         
     def _tokenize(self, text: str):

@@ -25,7 +25,7 @@ class CodeRAGEngine:
         faiss_index_path: str = "faiss_index",
         cache_dir: str = "./cache",
         ollama_url: str = "http://localhost:11434",
-        model_name: str = "qwen3"
+        model_name: str = "qwen2.5:7b"
     ):
         self.chunks_path = chunks_path
         self.faiss_index_path = faiss_index_path
@@ -112,6 +112,11 @@ class CodeRAGEngine:
     def _call_ollama_sync(self, prompt: str, context: str) -> str:
         import requests
         
+        # [v2.5.2-stable] 回退至基线 Prompt 模板
+        # 原因: P0 微调版 (temp=0.35, 5句话, num_predict=400) 导致黄金文档覆盖率 10.3%
+        # 基线版本 (temp=0.3, 3句话, num_predict=512) 黄金文档覆盖率 14.1%
+        # 决策: 在评估方法修复前，保持最稳定的已知配置
+        
         full_prompt = f"""基于以下参考信息回答用户问题。请简洁回答，不超过3句话。
 
 参考信息：
@@ -126,8 +131,8 @@ class CodeRAGEngine:
             "prompt": full_prompt,
             "stream": False,
             "options": {
-                "temperature": 0.3,
-                "num_predict": 512,
+                "temperature": 0.3,       # [回退] 从 0.35 恢复到基线值
+                "num_predict": 512,         # [回退] 从 400 恢复到基线值
                 "num_ctx": 4096,
                 "top_p": 0.9,
                 "repeat_penalty": 1.1
@@ -141,6 +146,60 @@ class CodeRAGEngine:
         )
         result = resp.json()
         return result.get('response', '抱歉，无法生成回答。')
+    
+    def _call_ollama_stream(self, prompt: str, context: str) -> str:
+        """流式调用 Ollama API，逐 token 返回"""
+        import requests
+        
+        full_prompt = f"""基于以下参考信息回答用户问题。请简洁回答，不超过3句话。
+
+参考信息：
+{context}
+
+用户问题：{prompt}
+
+回答："""
+        
+        payload = {
+            "model": self.model_name,
+            "prompt": full_prompt,
+            "stream": True,
+            "options": {
+                "temperature": 0.3,
+                "num_predict": 512,
+                "num_ctx": 4096,
+                "top_p": 0.9,
+                "repeat_penalty": 1.1
+            }
+        }
+        
+        full_response = []
+        try:
+            resp = requests.post(
+                f"{self.ollama_url}/api/generate",
+                json=payload,
+                stream=True,
+                timeout=90
+            )
+            
+            for line in resp.iter_lines():
+                if line:
+                    try:
+                        import json
+                        data = json.loads(line)
+                        chunk = data.get('response', '')
+                        if chunk:
+                            full_response.append(chunk)
+                            yield chunk
+                        
+                        if data.get('done', False):
+                            break
+                    except Exception as e:
+                        continue
+        except Exception as e:
+            print(f"Stream error: {e}")
+        
+        return ''.join(full_response)
     
     def _generate_hyde_sync(self, query: str) -> str:
         import requests
@@ -180,15 +239,17 @@ class CodeRAGEngine:
             return cached_result
         
         hyde_query = query
-        if use_hyde and self._is_abstract_question(query):
-            try:
-                loop = asyncio.get_event_loop()
-                hyde_query = await loop.run_in_executor(
-                    None, lambda: self._generate_hyde_sync(query)
-                )
-            except Exception as e:
-                print(f"HyDE generation failed: {e}")
-                hyde_query = query
+        # [P0-1] HyDE 模块已移除 - 诊断 C4 显示成功率 0%，平均损害 -46.2%
+        # 原因：所有查询被误判为抽象问题，假设答案污染检索向量
+        # if use_hyde and self._is_abstract_question(query):
+        #     try:
+        #         loop = asyncio.get_event_loop()
+        #         hyde_query = await loop.run_in_executor(
+        #             None, lambda: self._generate_hyde_sync(query)
+        #         )
+        #     except Exception as e:
+        #         print(f"HyDE generation failed: {e}")
+        #         hyde_query = query
         
         t_coarse = time.perf_counter()
         loop = asyncio.get_event_loop()
@@ -259,6 +320,96 @@ class CodeRAGEngine:
         
         return result
     
+    async def stream_query(self, query: str, top_k: int = 10, use_hyde: bool = False):
+        """流式查询，先完成检索，再逐 token 生成答案
+        
+        Yields:
+            dict: 包含 'type' ('sources'/'chunk'/'done') 和相关数据
+        """
+        start_time = time.perf_counter()
+        
+        if not self._initialized:
+            await self.initialize()
+        
+        hyde_query = query
+        
+        t_coarse = time.perf_counter()
+        loop = asyncio.get_event_loop()
+        
+        query_emb = self.embedder.embed_query(hyde_query)
+        query_emb_flat = query_emb[0].tolist()
+        self.coarse_engine.set_query_embedding(query_emb_flat)
+        
+        coarse_indices = await loop.run_in_executor(
+            None,
+            lambda: self.coarse_engine.coarse_search(hyde_query, top_n=40)
+        )
+        coarse_ms = (time.perf_counter() - t_coarse) * 1000
+        
+        t_rerank = time.perf_counter()
+        retrieved_texts = self.coarse_engine.get_chunk_texts(coarse_indices)
+        retrieved_sources = self.coarse_engine.get_chunk_sources(coarse_indices)
+        
+        rerank_pairs = [(hyde_query, doc) for doc in retrieved_texts]
+        rerank_scores = await loop.run_in_executor(
+            None,
+            lambda: self.reranker.predict(rerank_pairs)
+        )
+        rerank_ms = (time.perf_counter() - t_rerank) * 1000
+        
+        scored_results = list(zip(retrieved_texts, retrieved_sources, rerank_scores))
+        scored_results.sort(key=lambda x: x[2], reverse=True)
+        
+        top_results = scored_results[:top_k]
+        
+        context_parts = []
+        sources_list = []
+        for i, (text, source, score) in enumerate(top_results):
+            context_parts.append(f"[文档{i+1}] ({source})\n{text}\n")
+            sources_list.append({
+                'source': source,
+                'score': float(score),
+                'preview': text[:200]
+            })
+        
+        context_str = "\n".join(context_parts)
+        
+        # 先返回 sources 和检索信息
+        yield {
+            'type': 'sources',
+            'sources': sources_list,
+            'coarse_ms': round(coarse_ms, 2),
+            'rerank_ms': round(rerank_ms, 2)
+        }
+        
+        # 然后流式生成答案
+        t_llm = time.perf_counter()
+        full_answer = []
+        
+        def generate_stream():
+            for chunk in self._call_ollama_stream(query, context_str):
+                full_answer.append(chunk)
+                yield chunk
+        
+        for chunk in await loop.run_in_executor(None, lambda: list(generate_stream())):
+            yield {
+                'type': 'chunk',
+                'content': chunk
+            }
+        
+        llm_ms = (time.perf_counter() - t_llm) * 1000
+        total_time = (time.perf_counter() - start_time) * 1000
+        
+        # 最后返回完成信息
+        yield {
+            'type': 'done',
+            'answer': ''.join(full_answer),
+            'latency_ms': round(total_time, 2),
+            'llm_ms': round(llm_ms, 2),
+            'retrieved_count': len(coarse_indices),
+            'top_k': top_k
+        }
+    
     async def batch_query(self, queries: List[str], top_k: int = 10) -> List[Dict]:
         tasks = [self.query(q, top_k) for q in queries]
         results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -276,3 +427,9 @@ class CodeRAGEngine:
                 processed_results.append(r)
         
         return processed_results
+    
+    async def close(self):
+        """清理资源"""
+        if self.cache:
+            self.cache.close()
+        self._initialized = False

@@ -4,8 +4,19 @@ from typing import List, Tuple
 
 class ONNXReranker:
     def __init__(self, model_path: str = "models/crossencoder-fp32/model.onnx"):
+        # [v2.5.2-stable] 强制使用 CPU Execution Provider
+        # 原因: CoreML 初始化成功但推理时崩溃 (error code: -1)
+        # 影响: 引入不确定性（部分批次可能不崩溃），导致精排结果不稳定
+        # 决策: 模型仅 87MB，CPU 7-8ms 完全可接受；强行修复 CoreML 属于框架级问题
+        
         providers = ['CPUExecutionProvider']
+        
         self.session = ort.InferenceSession(model_path, providers=providers)
+        active_providers = self.session.get_providers()
+        
+        print(f"  ✅ Reranker: CPU Execution Provider (稳定模式) | providers={active_providers}")
+        self.use_coreml = False
+        
         self.tokenizer = None
     
     def _tokenize_pairs(self, query: str, documents: List[str]):
@@ -36,7 +47,9 @@ class ONNXReranker:
         documents = [doc for _, doc in pairs]
         
         inputs = self._tokenize_pairs(query, documents)
+        
         outputs = self.session.run(None, inputs)
+        
         logits = outputs[0]
         
         if logits.shape[1] == 1:

@@ -1,19 +1,28 @@
 {
-  "latest_version": "2.0.0",
-  "last_updated": "2026-04-25 19:45:00",
-  "total_entries": 2,
+  "latest_version": "2.5.3",
+  "last_updated": "2026-04-26",
+  "total_entries": 3,
   "history": [
     {
-      "version": "2.0.0",
-      "date": "2026-04-25",
-      "type": "新功能",
-      "files_changed": 4
+      "version": "2.5.3",
+      "date": "2026-04-26",
+      "type": "质量评估重建与用户体验优化",
+      "files_changed": 8,
+      "summary": "流式输出、语义评估器、阈值优化、Reranker稳定性修复"
+    },
+    {
+      "version": "2.5.1",
+      "date": "2026-04-26",
+      "type": "Bug修复",
+      "files_changed": 1,
+      "summary": "修复Streamlit运行时错误"
     },
     {
       "version": "2.0.0",
       "date": "2026-04-25",
       "type": "新功能",
-      "files_changed": 4
+      "files_changed": 4,
+      "summary": "C++高性能引擎 + ONNX推理 + AsyncIO异步架构"
     }
   ]
 }
