@@ -1,8 +1,15 @@
 {
-  "latest_version": "2.5.3",
-  "last_updated": "2026-04-26",
-  "total_entries": 3,
+  "latest_version": "2.5.4",
+  "last_updated": "2026-04-27",
+  "total_entries": 4,
   "history": [
+    {
+      "version": "2.5.4",
+      "date": "2026-04-27",
+      "type": "隐私防护与功能优化",
+      "files_changed": 10,
+      "summary": "环境变量管理、Prompt优化装置、隐私防护措施"
+    },
     {
       "version": "2.5.3",
       "date": "2026-04-26",

@@ -1,9 +1,12 @@
 import numpy as np
 import onnxruntime as ort
 from typing import List, Tuple
+from core.env_manager import env_manager
 
 class ONNXReranker:
-    def __init__(self, model_path: str = "models/crossencoder-fp32/model.onnx"):
+    def __init__(self, model_path: str = None):
+        if model_path is None:
+            model_path = env_manager.get_reranker_model_path()
         # [v2.5.2-stable] 强制使用 CPU Execution Provider
         # 原因: CoreML 初始化成功但推理时崩溃 (error code: -1)
         # 影响: 引入不确定性（部分批次可能不崩溃），导致精排结果不稳定

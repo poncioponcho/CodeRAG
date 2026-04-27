@@ -1,8 +1,11 @@
 import numpy as np
 import onnxruntime as ort
+from core.env_manager import env_manager
 
 class ONNXEmbedder:
-    def __init__(self, model_path: str = "models/bge-small-zh-onnx/model.onnx"):
+    def __init__(self, model_path: str = None):
+        if model_path is None:
+            model_path = env_manager.get_embedding_model_path()
         providers = [
             'CoreMLExecutionProvider',
             'CPUExecutionProvider'

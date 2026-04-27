@@ -15,6 +15,8 @@ from typing import Dict, List, Optional, Any
 
 from core.embedder import ONNXEmbedder
 from core.reranker import ONNXReranker
+from core.prompt_optimizer import PromptOptimizer, PromptOptimizationResult
+from core.env_manager import env_manager
 
 EMBEDDINGS_CACHE = "embeddings_cache.npy"
 
@@ -23,20 +25,20 @@ class CodeRAGEngine:
         self,
         chunks_path: str = "chunks.pkl",
         faiss_index_path: str = "faiss_index",
-        cache_dir: str = "./cache",
-        ollama_url: str = "http://localhost:11434",
-        model_name: str = "qwen2.5:7b"
+        cache_dir: str = None,
+        ollama_url: str = None,
+        model_name: str = None
     ):
         self.chunks_path = chunks_path
         self.faiss_index_path = faiss_index_path
-        self.ollama_url = ollama_url
-        self.model_name = model_name
+        self.ollama_url = ollama_url or env_manager.get_ollama_url()
+        self.model_name = model_name or env_manager.get_ollama_model()
         
         self.embedder = ONNXEmbedder()
         self.reranker = ONNXReranker()
         
         if dc:
-            self.cache = dc.Cache(cache_dir)
+            self.cache = dc.Cache(cache_dir or env_manager.get_cache_dir())
         else:
             self.cache = None
         
@@ -44,6 +46,7 @@ class CodeRAGEngine:
         self.chunks_text = []
         self.chunks_source = []
         self.query_embedding = []
+        self.prompt_optimizer = None
         
         self._initialized = False
     
@@ -74,6 +77,14 @@ class CodeRAGEngine:
             vec_k=20,
             bm25_k=20
         )
+        
+        # 初始化 Prompt 优化器
+        self.prompt_optimizer = PromptOptimizer(
+            self.embedder,
+            self.coarse_engine,
+            self.reranker
+        )
+        print(f"  ✅ Prompt 优化器已初始化")
         
         if os.path.exists(EMBEDDINGS_CACHE):
             print(f"  ⚡ Loading cached embeddings from {EMBEDDINGS_CACHE}...")
@@ -319,6 +330,40 @@ class CodeRAGEngine:
             self.cache[cache_key] = result
         
         return result
+    
+    async def optimize_prompt(self, original_prompt: str, top_k: int = 10) -> Dict[str, Any]:
+        """
+        优化用户输入的prompt
+        
+        Args:
+            original_prompt: 用户原始输入
+            top_k: 检索的相关片段数量
+            
+        Returns:
+            优化结果字典
+        """
+        start_time = time.perf_counter()
+        
+        if not self._initialized:
+            await self.initialize()
+        
+        loop = asyncio.get_event_loop()
+        
+        # 同步执行优化
+        result = await loop.run_in_executor(
+            None,
+            lambda: self.prompt_optimizer.optimize(original_prompt, top_k)
+        )
+        
+        optimization_time = (time.perf_counter() - start_time) * 1000
+        
+        return {
+            'original_prompt': result.original_prompt,
+            'optimized_prompt': result.optimized_prompt,
+            'related_chunks': result.related_chunks,
+            'expansion_info': result.expansion_info,
+            'optimization_time_ms': round(optimization_time, 2)
+        }
     
     async def stream_query(self, query: str, top_k: int = 10, use_hyde: bool = False):
         """流式查询，先完成检索，再逐 token 生成答案
