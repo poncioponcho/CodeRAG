@@ -1,8 +1,15 @@
 {
-  "latest_version": "2.5.4",
-  "last_updated": "2026-04-27",
-  "total_entries": 4,
+  "latest_version": "2.5.5",
+  "last_updated": "2026-04-28",
+  "total_entries": 5,
   "history": [
+    {
+      "version": "2.5.5",
+      "date": "2026-04-28",
+      "type": "功能增强 / 文档完善",
+      "files_changed": 12,
+      "summary": "RAG塌缩诊断框架正式发布，包含7个核心模块、36个测试用例、README章节更新、面试防御话术"
+    },
     {
       "version": "2.5.4",
       "date": "2026-04-27",

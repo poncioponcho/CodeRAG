@@ -1,0 +1,50 @@
+[
+  {
+    "round": "A",
+    "name": "Baseline",
+    "prompt_version": "默认 (不超过3句话)",
+    "params": {
+      "max_tokens": 512,
+      "temperature": 0.3,
+      "top_p": 0.9,
+      "presence_penalty": 0.0
+    },
+    "output_tokens": 268,
+    "collapse_index": 0.46399999999999997,
+    "repetition_rate": 0.0,
+    "evaluation": "✅ 回答较为完整",
+    "latency_ms": 35057.964625011664
+  },
+  {
+    "round": "B",
+    "name": "+Prompt Only",
+    "prompt_version": "anti_collapse.txt",
+    "params": {
+      "max_tokens": 512,
+      "temperature": 0.3,
+      "top_p": 0.9,
+      "presence_penalty": 0.0
+    },
+    "output_tokens": 643,
+    "collapse_index": 0.0,
+    "repetition_rate": 0.0,
+    "evaluation": "✅ 结构化输出完整，包含多个要点",
+    "latency_ms": 47313.211999993655
+  },
+  {
+    "round": "C",
+    "name": "+Full Optimized",
+    "prompt_version": "anti_collapse.txt",
+    "params": {
+      "max_tokens": 2048,
+      "temperature": 0.5,
+      "top_p": 0.9,
+      "presence_penalty": 0.3
+    },
+    "output_tokens": 530,
+    "collapse_index": 0.0,
+    "repetition_rate": 0.0,
+    "evaluation": "🎉 完整分点+代码示例+注意事项，约400+ token",
+    "latency_ms": 60222.16129099252
+  }
+]

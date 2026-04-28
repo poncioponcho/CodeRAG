@@ -1,6 +1,9 @@
 # 敏感信息
 .env
 
+# 面试准备文档（不上传）
+INTERVIEW_QA.md
+
 # macOS 系统文件
 .DS_Store
 
